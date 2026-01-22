@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0d1117"/>
+  <g transform="translate(256, 256)">
+    <!-- Bar -->
+    <rect x="-180" y="-8" width="360" height="16" fill="#6b7280" rx="2"/>
+    <!-- Left plates -->
+    <rect x="-160" y="-60" width="16" height="120" fill="#2563eb" rx="3"/>
+    <rect x="-140" y="-50" width="12" height="100" fill="#16a34a" rx="2"/>
+    <!-- Right plates -->
+    <rect x="144" y="-60" width="16" height="120" fill="#2563eb" rx="3"/>
+    <rect x="128" y="-50" width="12" height="100" fill="#16a34a" rx="2"/>
+  </g>
+  <text x="256" y="380" text-anchor="middle" fill="#e6edf3" font-family="system-ui, sans-serif" font-size="48" font-weight="bold">LoadMyBar</text>
+</svg>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RY7R4MB2F1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-RY7R4MB2F1');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>1RM Calculator - Estimate Your One Rep Max | LoadMyBar</title>
+    <meta name="description" content="Free one rep max calculator. Estimate your 1RM from any weight and rep count using multiple proven formulas (Epley, Brzycki, Lombardi, and more).">
+    <meta name="keywords" content="1rm calculator, one rep max, max strength calculator, epley formula, brzycki formula">
+    <meta name="theme-color" content="#0d1117">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="canonical" href="https://loadmybar.com/tools/one-rep-max.html">
+    <link rel="stylesheet" href="../styles/shared.css">
+    <meta property="og:title" content="1RM Calculator | LoadMyBar">
+    <meta property="og:description" content="Estimate your one rep max from any weight and rep count.">
+    <style>
+        .calc-header {
+            text-align: center;
+            padding: var(--space-6) 0;
+        }
+        .calc-title {
+            font-size: var(--text-3xl);
+            margin-bottom: var(--space-2);
+        }
+        .calc-subtitle {
+            color: var(--text-secondary);
+        }
+        .input-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+            margin-bottom: var(--space-5);
+        }
+        @media (max-width: 480px) {
+            .input-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        .input-group label {
+            display: block;
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-2);
+        }
+        .input-group input {
+            width: 100%;
+            padding: var(--space-4);
+            font-size: var(--text-2xl);
+            font-weight: var(--font-bold);
+            text-align: center;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+        .unit-toggle {
+            display: flex;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            margin-bottom: var(--space-5);
+        }
+        .unit-btn {
+            flex: 1;
+            padding: var(--space-3);
+            font-size: var(--text-sm);
+            font-weight: var(--font-bold);
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .unit-btn.active {
+            background: var(--accent-green-emphasis);
+            color: var(--text-on-emphasis);
+        }
+        .result-section {
+            text-align: center;
+            padding: var(--space-6);
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-5);
+        }
+        .result-label {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-2);
+        }
+        .result-value {
+            font-size: 4rem;
+            font-weight: var(--font-bold);
+            color: var(--accent-green);
+            line-height: 1;
+        }
+        .result-unit {
+            font-size: var(--text-xl);
+            color: var(--text-secondary);
+            margin-left: var(--space-2);
+        }
+        .percentage-table {
+            margin-top: var(--space-5);
+        }
+        .percentage-table h3 {
+            font-size: var(--text-lg);
+            margin-bottom: var(--space-4);
+            color: var(--accent-blue);
+        }
+        .pct-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: var(--space-2);
+        }
+        .pct-item {
+            padding: var(--space-3);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            text-align: center;
+        }
+        .pct-label {
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+        }
+        .pct-weight {
+            font-size: var(--text-lg);
+            font-weight: var(--font-bold);
+        }
+        .pct-reps {
+            font-size: var(--text-xs);
+            color: var(--text-secondary);
+        }
+        .formulas-section {
+            margin-top: var(--space-6);
+            padding: var(--space-5);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+        }
+        .formulas-section h3 {
+            margin-bottom: var(--space-4);
+            color: var(--accent-blue);
+        }
+        .formula-grid {
+            display: grid;
+            gap: var(--space-3);
+        }
+        .formula-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-3);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+        }
+        .formula-name {
+            font-weight: var(--font-medium);
+        }
+        .formula-result {
+            font-weight: var(--font-bold);
+            color: var(--text-primary);
+        }
+        .content-section {
+            margin: var(--space-6) 0;
+            padding: var(--space-5);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+        }
+        .content-section h2 {
+            margin-bottom: var(--space-4);
+            color: var(--accent-blue);
+        }
+        .content-section p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: var(--space-3);
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-4);
+        }
+        .back-link:hover {
+            color: var(--accent-blue);
+        }
+        .cta-box {
+            text-align: center;
+            padding: var(--space-6);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+            margin: var(--space-6) 0;
+        }
+    </style>
+</head>
+<body class="has-bottom-nav">
+    <div class="container">
+        <a href="../index.html" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Calculator
+        </a>
+
+        <header class="calc-header">
+            <h1 class="calc-title">1RM Calculator</h1>
+            <p class="calc-subtitle">Estimate your one rep max from any set</p>
+        </header>
+
+        <main class="card card-elevated">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="weight">Weight Lifted</label>
+                    <input type="number" id="weight" value="185" min="0" step="5" inputmode="decimal">
+                </div>
+                <div class="input-group">
+                    <label for="reps">Reps Completed</label>
+                    <input type="number" id="reps" value="5" min="1" max="30" step="1" inputmode="numeric">
+                </div>
+            </div>
+
+            <div class="unit-toggle">
+                <button class="unit-btn active" data-unit="lb">LB</button>
+                <button class="unit-btn" data-unit="kg">KG</button>
+            </div>
+
+            <div class="result-section">
+                <div class="result-label">Estimated 1 Rep Max</div>
+                <span class="result-value" id="oneRepMax">208</span>
+                <span class="result-unit" id="resultUnit">LB</span>
+            </div>
+
+            <div class="percentage-table">
+                <h3>Training Percentages</h3>
+                <div class="pct-grid" id="percentages"></div>
+            </div>
+
+            <div class="formulas-section">
+                <h3>Formula Comparison</h3>
+                <div class="formula-grid" id="formulas"></div>
+                <p style="color:var(--text-muted);font-size:var(--text-xs);margin-top:var(--space-3);">Primary result uses Epley formula. All results rounded to nearest achievable weight.</p>
+            </div>
+        </main>
+
+        <div class="content-section">
+            <h2>How 1RM Calculators Work</h2>
+            <p>One rep max (1RM) calculators use submaximal performance data to estimate the maximum weight you could lift for a single repetition. This is safer than actually testing your true 1RM, which carries injury risk.</p>
+            <p>The most accurate predictions come from sets of 3-6 reps. Higher rep sets (10+) become less reliable as muscular endurance plays a larger role than maximum strength.</p>
+        </div>
+
+        <div class="content-section">
+            <h2>Training Max vs True 1RM</h2>
+            <p>Many programs (like 5/3/1) recommend using a "training max" of 85-90% of your true 1RM for programming. This builds in a buffer for bad days and allows for sustainable progress.</p>
+            <p><strong>Training Max = Estimated 1RM × 0.90</strong></p>
+        </div>
+
+        <div class="cta-box">
+            <h3>Ready to Load Your Bar?</h3>
+            <p style="color:var(--text-secondary);margin-bottom:var(--space-4)">See exactly which plates to load for any weight.</p>
+            <a href="../index.html" class="btn btn-primary btn-lg">Open Plate Calculator</a>
+        </div>
+
+        <footer class="footer">
+            <p>LoadMyBar - Free tools for lifters</p>
+        </footer>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="nav-bottom" aria-label="Main navigation">
+        <a href="../index.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/>
+                <rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>
+            </svg>
+            <span>Calculator</span>
+        </a>
+        <a href="../warmup.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+            </svg>
+            <span>Warmup</span>
+        </a>
+        <a href="../531.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            <span>5/3/1</span>
+        </a>
+        <a href="../inventory.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+            <span>My Plates</span>
+        </a>
+    </nav>
+
+    <script>
+        const weightInput = document.getElementById('weight');
+        const repsInput = document.getElementById('reps');
+        const oneRepMaxDisplay = document.getElementById('oneRepMax');
+        const resultUnit = document.getElementById('resultUnit');
+        const percentagesDiv = document.getElementById('percentages');
+        const formulasDiv = document.getElementById('formulas');
+        const unitBtns = document.querySelectorAll('.unit-btn');
+
+        let currentUnit = 'lb';
+
+        // 1RM Formulas
+        const formulas = {
+            epley: (w, r) => r === 1 ? w : w * (1 + r / 30),
+            brzycki: (w, r) => r === 1 ? w : w * (36 / (37 - r)),
+            lombardi: (w, r) => r === 1 ? w : w * Math.pow(r, 0.1),
+            oconner: (w, r) => r === 1 ? w : w * (1 + r / 40),
+            mayhew: (w, r) => r === 1 ? w : (100 * w) / (52.2 + 41.9 * Math.exp(-0.055 * r))
+        };
+
+        // Percentage chart data
+        const percentageData = [
+            { pct: 100, reps: '1' },
+            { pct: 95, reps: '2' },
+            { pct: 90, reps: '3-4' },
+            { pct: 85, reps: '5-6' },
+            { pct: 80, reps: '7-8' },
+            { pct: 75, reps: '9-10' },
+            { pct: 70, reps: '11-12' },
+            { pct: 65, reps: '13-15' }
+        ];
+
+        function roundToPlate(weight, unit) {
+            const increment = unit === 'lb' ? 5 : 2.5;
+            return Math.round(weight / increment) * increment;
+        }
+
+        function calculate() {
+            const weight = parseFloat(weightInput.value) || 0;
+            const reps = parseInt(repsInput.value) || 1;
+
+            if (weight <= 0 || reps < 1) {
+                oneRepMaxDisplay.textContent = '—';
+                return;
+            }
+
+            // Primary estimate (Epley)
+            const oneRM = roundToPlate(formulas.epley(weight, reps), currentUnit);
+            oneRepMaxDisplay.textContent = oneRM;
+            resultUnit.textContent = currentUnit.toUpperCase();
+
+            // Percentage table
+            percentagesDiv.innerHTML = percentageData.map(({ pct, reps }) => {
+                const w = roundToPlate(oneRM * (pct / 100), currentUnit);
+                return `
+                    <div class="pct-item">
+                        <div class="pct-label">${pct}%</div>
+                        <div class="pct-weight">${w}</div>
+                        <div class="pct-reps">${reps} reps</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Formula comparison
+            formulasDiv.innerHTML = Object.entries(formulas).map(([name, fn]) => {
+                const result = roundToPlate(fn(weight, reps), currentUnit);
+                return `
+                    <div class="formula-row">
+                        <span class="formula-name">${name.charAt(0).toUpperCase() + name.slice(1)}</span>
+                        <span class="formula-result">${result} ${currentUnit.toUpperCase()}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        weightInput.addEventListener('input', calculate);
+        repsInput.addEventListener('input', calculate);
+
+        unitBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                unitBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const newUnit = btn.dataset.unit;
+                const weight = parseFloat(weightInput.value) || 0;
+
+                if (newUnit !== currentUnit) {
+                    if (newUnit === 'kg') {
+                        weightInput.value = Math.round(weight / 2.205);
+                    } else {
+                        weightInput.value = Math.round(weight * 2.205);
+                    }
+                }
+
+                currentUnit = newUnit;
+                calculate();
+            });
+        });
+
+        // Initialize
+        calculate();
+    </script>
+</body>
+</html>

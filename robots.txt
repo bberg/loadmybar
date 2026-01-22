@@ -1,0 +1,11 @@
+# LoadMyBar - Barbell Plate Calculator
+# https://loadmybar.com
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://loadmybar.com/sitemap.xml
+
+# Exclude tools/deploy directory
+Disallow: /tools/deploy/
