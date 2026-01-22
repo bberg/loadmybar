@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>5/3/1 Calculator - Wendler Program with Plates</title>
+    <meta name="description" content="Complete Wendler 5/3/1 program calculator. See exact plates for every set in your 4-week cycle.">
+    <meta name="theme-color" content="#0d1117">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="styles/shared.css">
+    <style>
+        /* Page-specific styles */
+        .lift-inputs {
+            display: grid;
+            gap: var(--space-4);
+        }
+
+        @media (min-width: 600px) {
+            .lift-inputs {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .lift-input-card {
+            padding: var(--space-4);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg);
+        }
+
+        .lift-input-card.active {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 1px var(--accent-blue);
+        }
+
+        .lift-name {
+            font-weight: var(--font-semibold);
+            margin-bottom: var(--space-2);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .lift-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--text-secondary);
+        }
+
+        .lift-input {
+            width: 100%;
+            padding: var(--space-3);
+            font-size: var(--text-xl);
+            font-weight: var(--font-bold);
+            text-align: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+        }
+
+        .lift-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .lift-input-label {
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: var(--space-1);
+        }
+
+        /* Unit and TM toggles */
+        .settings-row {
+            display: flex;
+            gap: var(--space-3);
+            margin-top: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .setting-group {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .setting-label {
+            font-size: var(--text-xs);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-1);
+        }
+
+        .toggle-group {
+            display: flex;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: var(--space-2) var(--space-3);
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .toggle-btn.active {
+            background: var(--accent-green-emphasis);
+            color: var(--text-on-emphasis);
+        }
+
+        .toggle-btn:not(.active):hover {
+            background: var(--bg-tertiary);
+        }
+
+        /* Week tabs */
+        .week-tabs {
+            display: flex;
+            gap: var(--space-2);
+            margin-top: var(--space-6);
+            overflow-x: auto;
+            padding-bottom: var(--space-2);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .week-tab {
+            flex: 1;
+            min-width: 80px;
+            padding: var(--space-3) var(--space-4);
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            text-align: center;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .week-tab:hover {
+            background: var(--border-default);
+        }
+
+        .week-tab.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: var(--text-on-emphasis);
+        }
+
+        .week-tab.deload {
+            color: var(--accent-yellow);
+        }
+
+        .week-tab.deload.active {
+            background: var(--accent-yellow);
+            border-color: var(--accent-yellow);
+            color: #000;
+        }
+
+        /* Program display */
+        .program-display {
+            margin-top: var(--space-5);
+        }
+
+        .week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-3) 0;
+            margin-bottom: var(--space-4);
+            border-bottom: 1px solid var(--border-muted);
+        }
+
+        .week-title {
+            font-size: var(--text-lg);
+            font-weight: var(--font-semibold);
+        }
+
+        .week-scheme {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+
+        /* Lift cards */
+        .lift-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-4);
+            overflow: hidden;
+        }
+
+        .lift-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-4);
+            background: var(--bg-secondary);
+            cursor: pointer;
+        }
+
+        .lift-card-header:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .lift-card-title {
+            font-weight: var(--font-semibold);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .lift-card-tm {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+
+        .lift-card-body {
+            padding: var(--space-4);
+        }
+
+        .lift-card.collapsed .lift-card-body {
+            display: none;
+        }
+
+        .expand-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--text-muted);
+            transition: transform var(--transition-fast);
+        }
+
+        .lift-card.collapsed .expand-icon {
+            transform: rotate(-90deg);
+        }
+
+        /* Set rows */
+        .set-row {
+            display: flex;
+            align-items: center;
+            padding: var(--space-3) 0;
+            border-bottom: 1px solid var(--border-muted);
+        }
+
+        .set-row:last-child {
+            border-bottom: none;
+        }
+
+        .set-number {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-full);
+            font-size: var(--text-xs);
+            font-weight: var(--font-bold);
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .set-details {
+            flex: 1;
+            margin-left: var(--space-3);
+        }
+
+        .set-weight {
+            font-size: var(--text-lg);
+            font-weight: var(--font-bold);
+        }
+
+        .set-reps {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+
+        .set-reps .amrap {
+            color: var(--accent-green);
+            font-weight: var(--font-semibold);
+        }
+
+        .set-plates {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-1);
+            justify-content: flex-end;
+        }
+
+        .plate-mini {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 2px 6px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            font-weight: var(--font-medium);
+        }
+
+        .plate-mini-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+
+        /* Color coding for lift types */
+        .lift-squat .lift-card-header { border-left: 3px solid #dc2626; }
+        .lift-bench .lift-card-header { border-left: 3px solid #2563eb; }
+        .lift-deadlift .lift-card-header { border-left: 3px solid #16a34a; }
+        .lift-ohp .lift-card-header { border-left: 3px solid #eab308; }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-8);
+            color: var(--text-secondary);
+        }
+
+        /* Info banner */
+        .info-banner {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-3);
+            padding: var(--space-4);
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-5);
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+
+        .info-banner svg {
+            flex-shrink: 0;
+            color: var(--accent-blue);
+        }
+    </style>
+</head>
+<body class="has-bottom-nav">
+    <div class="container">
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1 class="page-title">5/3/1 Calculator</h1>
+            <p class="page-subtitle">Wendler's program with plates for every set</p>
+        </header>
+
+        <!-- Calculator Card -->
+        <main class="card card-elevated">
+            <!-- Info Banner -->
+            <div class="info-banner">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+                <span>Enter your Training Max (TM) for each lift. Your TM should be ~90% of your true 1 rep max.</span>
+            </div>
+
+            <!-- Lift Inputs -->
+            <div class="lift-inputs">
+                <div class="lift-input-card" data-lift="squat">
+                    <div class="lift-name">
+                        <svg class="lift-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="10" width="16" height="4" rx="1"/>
+                            <line x1="2" y1="12" x2="4" y2="12"/>
+                            <line x1="20" y1="12" x2="22" y2="12"/>
+                        </svg>
+                        Squat
+                    </div>
+                    <input type="number" class="lift-input" id="tmSquat" value="315" inputmode="decimal">
+                    <div class="lift-input-label">Training Max</div>
+                </div>
+
+                <div class="lift-input-card" data-lift="bench">
+                    <div class="lift-name">
+                        <svg class="lift-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="10" width="16" height="4" rx="1"/>
+                            <line x1="2" y1="12" x2="4" y2="12"/>
+                            <line x1="20" y1="12" x2="22" y2="12"/>
+                        </svg>
+                        Bench
+                    </div>
+                    <input type="number" class="lift-input" id="tmBench" value="225" inputmode="decimal">
+                    <div class="lift-input-label">Training Max</div>
+                </div>
+
+                <div class="lift-input-card" data-lift="deadlift">
+                    <div class="lift-name">
+                        <svg class="lift-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="10" width="16" height="4" rx="1"/>
+                            <line x1="2" y1="12" x2="4" y2="12"/>
+                            <line x1="20" y1="12" x2="22" y2="12"/>
+                        </svg>
+                        Deadlift
+                    </div>
+                    <input type="number" class="lift-input" id="tmDeadlift" value="365" inputmode="decimal">
+                    <div class="lift-input-label">Training Max</div>
+                </div>
+
+                <div class="lift-input-card" data-lift="ohp">
+                    <div class="lift-name">
+                        <svg class="lift-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="10" width="16" height="4" rx="1"/>
+                            <line x1="2" y1="12" x2="4" y2="12"/>
+                            <line x1="20" y1="12" x2="22" y2="12"/>
+                        </svg>
+                        OHP
+                    </div>
+                    <input type="number" class="lift-input" id="tmOHP" value="135" inputmode="decimal">
+                    <div class="lift-input-label">Training Max</div>
+                </div>
+            </div>
+
+            <!-- Settings Row -->
+            <div class="settings-row">
+                <div class="setting-group">
+                    <div class="setting-label">Units</div>
+                    <div class="toggle-group" id="unitToggle">
+                        <button class="toggle-btn active" data-unit="lb">LB</button>
+                        <button class="toggle-btn" data-unit="kg">KG</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <div class="setting-label">Bar Weight</div>
+                    <div class="toggle-group" id="barToggle">
+                        <button class="toggle-btn active" data-bar="45">45 lb</button>
+                        <button class="toggle-btn" data-bar="35">35 lb</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Week Tabs -->
+            <div class="week-tabs" role="tablist" aria-label="Program weeks">
+                <button class="week-tab active" data-week="1" role="tab" aria-selected="true">Week 1<br><small>5/5/5+</small></button>
+                <button class="week-tab" data-week="2" role="tab" aria-selected="false">Week 2<br><small>3/3/3+</small></button>
+                <button class="week-tab" data-week="3" role="tab" aria-selected="false">Week 3<br><small>5/3/1+</small></button>
+                <button class="week-tab deload" data-week="4" role="tab" aria-selected="false">Week 4<br><small>Deload</small></button>
+            </div>
+
+            <!-- Program Display -->
+            <div class="program-display" id="programDisplay" role="tabpanel"></div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Based on Jim Wendler's 5/3/1 program. Trust the process.</p>
+        </footer>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="nav-bottom" aria-label="Main navigation">
+        <a href="index.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="9"/>
+                <rect x="14" y="3" width="7" height="5"/>
+                <rect x="14" y="12" width="7" height="9"/>
+                <rect x="3" y="16" width="7" height="5"/>
+            </svg>
+            <span>Calculator</span>
+        </a>
+        <a href="warmup.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+            </svg>
+            <span>Warmup</span>
+        </a>
+        <a href="531.html" class="nav-item active" aria-current="page">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            <span>5/3/1</span>
+        </a>
+        <a href="inventory.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+            </svg>
+            <span>My Plates</span>
+        </a>
+    </nav>
+
+    <script>
+        // ===================================================================
+        // 5/3/1 Calculator Logic
+        // ===================================================================
+
+        // Plate configurations
+        const PLATES = {
+            lb: [
+                { weight: 45, color: '#2563eb', label: '45' },
+                { weight: 35, color: '#eab308', label: '35' },
+                { weight: 25, color: '#16a34a', label: '25' },
+                { weight: 10, color: '#f5f5f5', label: '10' },
+                { weight: 5, color: '#dc2626', label: '5' },
+                { weight: 2.5, color: '#16a34a', label: '2.5' }
+            ],
+            kg: [
+                { weight: 20, color: '#2563eb', label: '20' },
+                { weight: 15, color: '#eab308', label: '15' },
+                { weight: 10, color: '#16a34a', label: '10' },
+                { weight: 5, color: '#f5f5f5', label: '5' },
+                { weight: 2.5, color: '#dc2626', label: '2.5' },
+                { weight: 1.25, color: '#16a34a', label: '1.25' }
+            ]
+        };
+
+        // 5/3/1 Program Structure
+        const PROGRAM = {
+            1: {
+                name: 'Week 1',
+                scheme: '5/5/5+',
+                sets: [
+                    { pct: 0.65, reps: 5, amrap: false },
+                    { pct: 0.75, reps: 5, amrap: false },
+                    { pct: 0.85, reps: '5+', amrap: true }
+                ]
+            },
+            2: {
+                name: 'Week 2',
+                scheme: '3/3/3+',
+                sets: [
+                    { pct: 0.70, reps: 3, amrap: false },
+                    { pct: 0.80, reps: 3, amrap: false },
+                    { pct: 0.90, reps: '3+', amrap: true }
+                ]
+            },
+            3: {
+                name: 'Week 3',
+                scheme: '5/3/1+',
+                sets: [
+                    { pct: 0.75, reps: 5, amrap: false },
+                    { pct: 0.85, reps: 3, amrap: false },
+                    { pct: 0.95, reps: '1+', amrap: true }
+                ]
+            },
+            4: {
+                name: 'Deload',
+                scheme: '5/5/5',
+                sets: [
+                    { pct: 0.40, reps: 5, amrap: false },
+                    { pct: 0.50, reps: 5, amrap: false },
+                    { pct: 0.60, reps: 5, amrap: false }
+                ]
+            }
+        };
+
+        const LIFTS = [
+            { id: 'squat', name: 'Squat', className: 'lift-squat' },
+            { id: 'bench', name: 'Bench Press', className: 'lift-bench' },
+            { id: 'deadlift', name: 'Deadlift', className: 'lift-deadlift' },
+            { id: 'ohp', name: 'Overhead Press', className: 'lift-ohp' }
+        ];
+
+        // State
+        let currentUnit = 'lb';
+        let currentBarWeight = 45;
+        let currentWeek = 1;
+        let collapsedLifts = new Set();
+
+        // DOM Elements
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => document.querySelectorAll(sel);
+
+        const programDisplay = $('#programDisplay');
+        const weekTabs = $$('.week-tab');
+        const unitBtns = $$('#unitToggle .toggle-btn');
+        const barBtns = $$('#barToggle .toggle-btn');
+
+        // Calculate plates
+        function calculatePlates(targetWeight, barWeight, unit) {
+            const plates = PLATES[unit];
+            const weightPerSide = (targetWeight - barWeight) / 2;
+
+            if (weightPerSide <= 0) return { plates: [], actualWeight: barWeight };
+
+            const result = [];
+            let remaining = weightPerSide;
+
+            for (const plate of plates) {
+                const count = Math.floor(remaining / plate.weight);
+                if (count > 0) {
+                    result.push({ ...plate, count });
+                    remaining = Math.round((remaining - count * plate.weight) * 100) / 100;
+                }
+            }
+
+            const actualWeight = targetWeight - (remaining * 2);
+            return { plates: result, actualWeight: Math.round(actualWeight * 100) / 100 };
+        }
+
+        // Round to nearest plate increment
+        function roundToPlates(weight, barWeight, unit) {
+            const smallestPlate = unit === 'lb' ? 2.5 : 1.25;
+            const increment = smallestPlate * 2;
+            const platesWeight = weight - barWeight;
+            const roundedPlates = Math.round(platesWeight / increment) * increment;
+            return Math.max(barWeight, barWeight + roundedPlates);
+        }
+
+        // Calculate all sets for a lift in a week
+        function calculateLiftSets(tm, week, barWeight, unit) {
+            const weekData = PROGRAM[week];
+            return weekData.sets.map(set => {
+                const rawWeight = tm * set.pct;
+                const roundedWeight = roundToPlates(rawWeight, barWeight, unit);
+                const { plates, actualWeight } = calculatePlates(roundedWeight, barWeight, unit);
+
+                return {
+                    weight: actualWeight,
+                    reps: set.reps,
+                    amrap: set.amrap,
+                    percentage: Math.round(set.pct * 100),
+                    plates
+                };
+            });
+        }
+
+        // Render plates in compact form
+        function renderPlatesMini(plates) {
+            if (!plates || plates.length === 0) {
+                return '<span class="plate-mini"><span style="color:var(--text-muted)">Empty bar</span></span>';
+            }
+
+            return plates.map(p => {
+                const textColor = p.color === '#f5f5f5' ? '#000' : '#fff';
+                return `<span class="plate-mini">
+                    <span class="plate-mini-dot" style="background:${p.color}"></span>
+                    ${p.count}×${p.label}
+                </span>`;
+            }).join('');
+        }
+
+        // Render a single lift card
+        function renderLiftCard(lift, sets, unit, week) {
+            const tm = parseFloat($(`#tm${lift.id.charAt(0).toUpperCase() + lift.id.slice(1)}`).value) || 0;
+            const unitLabel = unit.toUpperCase();
+            const isCollapsed = collapsedLifts.has(lift.id);
+
+            const setsHtml = sets.map((set, i) => {
+                const repsLabel = set.amrap
+                    ? `<span class="amrap">${set.reps}</span>`
+                    : set.reps;
+
+                return `
+                    <div class="set-row">
+                        <span class="set-number">${i + 1}</span>
+                        <div class="set-details">
+                            <div class="set-weight">${set.weight} ${unitLabel}</div>
+                            <div class="set-reps">${repsLabel} reps @ ${set.percentage}%</div>
+                        </div>
+                        <div class="set-plates">${renderPlatesMini(set.plates)}</div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="lift-card ${lift.className} ${isCollapsed ? 'collapsed' : ''}" data-lift="${lift.id}">
+                    <div class="lift-card-header" onclick="toggleLiftCard('${lift.id}')">
+                        <div class="lift-card-title">
+                            ${lift.name}
+                            <span class="lift-card-tm">TM: ${tm} ${unitLabel}</span>
+                        </div>
+                        <svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="lift-card-body">
+                        ${setsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Toggle lift card collapse
+        window.toggleLiftCard = function(liftId) {
+            if (collapsedLifts.has(liftId)) {
+                collapsedLifts.delete(liftId);
+            } else {
+                collapsedLifts.add(liftId);
+            }
+            update();
+        };
+
+        // Main update function
+        function update() {
+            const weekData = PROGRAM[currentWeek];
+
+            let html = `
+                <div class="week-header">
+                    <span class="week-title">${weekData.name}</span>
+                    <span class="week-scheme">${weekData.scheme}</span>
+                </div>
+            `;
+
+            for (const lift of LIFTS) {
+                const inputId = `tm${lift.id.charAt(0).toUpperCase() + lift.id.slice(1)}`;
+                const tm = parseFloat($(`#${inputId}`).value) || 0;
+
+                if (tm > 0) {
+                    const sets = calculateLiftSets(tm, currentWeek, currentBarWeight, currentUnit);
+                    html += renderLiftCard(lift, sets, currentUnit, currentWeek);
+                }
+            }
+
+            programDisplay.innerHTML = html;
+
+            // Save state
+            localStorage.setItem('531calc', JSON.stringify({
+                unit: currentUnit,
+                barWeight: currentBarWeight,
+                week: currentWeek,
+                squat: $('#tmSquat').value,
+                bench: $('#tmBench').value,
+                deadlift: $('#tmDeadlift').value,
+                ohp: $('#tmOHP').value
+            }));
+        }
+
+        // Update bar toggle labels based on unit
+        function updateBarLabels() {
+            const weights = currentUnit === 'lb' ? ['45', '35'] : ['20', '15'];
+            const unitLabel = currentUnit === 'lb' ? 'lb' : 'kg';
+
+            barBtns.forEach((btn, i) => {
+                const weight = weights[i];
+                btn.dataset.bar = weight;
+                btn.textContent = `${weight} ${unitLabel}`;
+            });
+
+            // Update current bar weight
+            if (currentUnit === 'lb') {
+                currentBarWeight = currentBarWeight === 20 ? 45 : (currentBarWeight === 15 ? 35 : currentBarWeight);
+            } else {
+                currentBarWeight = currentBarWeight === 45 ? 20 : (currentBarWeight === 35 ? 15 : currentBarWeight);
+            }
+
+            // Update active state
+            barBtns.forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.dataset.bar) === currentBarWeight);
+            });
+        }
+
+        // Event Listeners
+        $$('.lift-input').forEach(input => {
+            input.addEventListener('input', update);
+        });
+
+        weekTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                weekTabs.forEach(t => {
+                    t.classList.remove('active');
+                    t.setAttribute('aria-selected', 'false');
+                });
+                tab.classList.add('active');
+                tab.setAttribute('aria-selected', 'true');
+                currentWeek = parseInt(tab.dataset.week);
+                update();
+            });
+        });
+
+        unitBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                unitBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const newUnit = btn.dataset.unit;
+
+                // Convert TM values
+                if (newUnit !== currentUnit) {
+                    $$('.lift-input').forEach(input => {
+                        const val = parseFloat(input.value) || 0;
+                        if (newUnit === 'kg') {
+                            input.value = Math.round(val / 2.205);
+                        } else {
+                            input.value = Math.round(val * 2.205);
+                        }
+                    });
+                }
+
+                currentUnit = newUnit;
+                updateBarLabels();
+                update();
+            });
+        });
+
+        barBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                barBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentBarWeight = parseInt(btn.dataset.bar);
+                update();
+            });
+        });
+
+        // Load saved state
+        function loadState() {
+            const saved = localStorage.getItem('531calc');
+            if (saved) {
+                try {
+                    const state = JSON.parse(saved);
+
+                    currentUnit = state.unit || 'lb';
+                    currentBarWeight = state.barWeight || 45;
+                    currentWeek = state.week || 1;
+
+                    unitBtns.forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.unit === currentUnit);
+                    });
+
+                    updateBarLabels();
+
+                    weekTabs.forEach(tab => {
+                        const isActive = parseInt(tab.dataset.week) === currentWeek;
+                        tab.classList.toggle('active', isActive);
+                        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                    });
+
+                    if (state.squat) $('#tmSquat').value = state.squat;
+                    if (state.bench) $('#tmBench').value = state.bench;
+                    if (state.deadlift) $('#tmDeadlift').value = state.deadlift;
+                    if (state.ohp) $('#tmOHP').value = state.ohp;
+
+                } catch (e) {
+                    console.error('Error loading state:', e);
+                }
+            }
+        }
+
+        // Initialize
+        loadState();
+        update();
+    </script>
+</body>
+</html>

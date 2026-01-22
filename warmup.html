@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Warmup Set Calculator - Progressive Warmup with Plates</title>
+    <meta name="description" content="Generate warmup sets for any working weight. See exact plates to load for each warmup set.">
+    <meta name="theme-color" content="#0d1117">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="styles/shared.css">
+    <style>
+        /* Page-specific styles */
+        .input-row {
+            display: flex;
+            gap: var(--space-3);
+            align-items: stretch;
+        }
+
+        .input-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .input-weight {
+            width: 100%;
+            font-size: var(--text-3xl);
+            font-weight: var(--font-bold);
+            text-align: center;
+            padding: var(--space-4);
+            min-height: 70px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            transition: all var(--transition-fast);
+        }
+
+        .input-weight:focus {
+            border-color: var(--accent-blue);
+            box-shadow: var(--shadow-glow-blue);
+            outline: none;
+        }
+
+        .unit-toggle {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .unit-btn {
+            padding: var(--space-3) var(--space-4);
+            font-size: var(--text-base);
+            font-weight: var(--font-bold);
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            min-width: 50px;
+        }
+
+        .unit-btn.active {
+            background: var(--accent-green-emphasis);
+            color: var(--text-on-emphasis);
+        }
+
+        .unit-btn:not(.active):hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        /* Set count control */
+        .set-count-control {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            margin-top: var(--space-4);
+        }
+
+        .set-count-btn {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-xl);
+            font-weight: var(--font-bold);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .set-count-btn:hover {
+            background: var(--border-default);
+            border-color: var(--accent-blue);
+        }
+
+        .set-count-btn:active {
+            transform: scale(0.95);
+        }
+
+        .set-count-value {
+            font-size: var(--text-2xl);
+            font-weight: var(--font-bold);
+            min-width: 40px;
+            text-align: center;
+        }
+
+        /* Bar selector */
+        .bar-select {
+            width: 100%;
+            min-height: var(--touch-target-min);
+            padding: var(--space-3) var(--space-4);
+            font-size: var(--text-base);
+            font-weight: var(--font-medium);
+            background: var(--bg-primary);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 20px;
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            padding-right: 44px;
+        }
+
+        .bar-select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+        }
+
+        /* Warmup sets display */
+        .warmup-sets {
+            margin-top: var(--space-6);
+        }
+
+        .warmup-set {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-4);
+            overflow: hidden;
+            transition: all var(--transition-fast);
+        }
+
+        .warmup-set.working-set {
+            border-color: var(--accent-green);
+            box-shadow: var(--shadow-glow-green);
+        }
+
+        .warmup-set-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-4);
+            background: var(--bg-secondary);
+            cursor: pointer;
+        }
+
+        .warmup-set.working-set .warmup-set-header {
+            background: rgba(35, 134, 54, 0.15);
+        }
+
+        .set-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .set-number {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-full);
+            font-weight: var(--font-bold);
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+
+        .working-set .set-number {
+            background: var(--accent-green-emphasis);
+            color: var(--text-on-emphasis);
+        }
+
+        .set-label {
+            font-weight: var(--font-medium);
+            color: var(--text-secondary);
+        }
+
+        .working-set .set-label {
+            color: var(--accent-green);
+            font-weight: var(--font-semibold);
+        }
+
+        .set-weight {
+            font-size: var(--text-xl);
+            font-weight: var(--font-bold);
+        }
+
+        .set-percentage {
+            font-size: var(--text-sm);
+            color: var(--text-muted);
+            margin-left: var(--space-2);
+        }
+
+        .warmup-set-body {
+            padding: var(--space-4);
+            border-top: 1px solid var(--border-muted);
+        }
+
+        .plates-label {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-2);
+        }
+
+        .plate-list-compact {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+        }
+
+        .plate-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: var(--space-1) var(--space-2);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+        }
+
+        .plate-tag-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        /* Mini barbell for each set */
+        .mini-barbell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-3) 0;
+            margin-top: var(--space-3);
+        }
+
+        .mini-bar {
+            width: 120px;
+            height: 6px;
+            background: linear-gradient(to bottom, #7a828a, #484f58, #7a828a);
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .mini-plates {
+            display: flex;
+            align-items: center;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .mini-plates.left {
+            right: calc(50% + 10px);
+            flex-direction: row-reverse;
+        }
+
+        .mini-plates.right {
+            left: calc(50% + 10px);
+        }
+
+        .mini-plate {
+            border-radius: 2px;
+            margin: 0 0.5px;
+        }
+
+        /* Copy button */
+        .copy-btn {
+            margin-top: var(--space-6);
+        }
+
+        .copy-success {
+            display: none;
+            color: var(--accent-green);
+            font-size: var(--text-sm);
+            margin-top: var(--space-2);
+            text-align: center;
+        }
+
+        .copy-success.show {
+            display: block;
+            animation: fadeIn var(--transition-fast);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .input-row {
+                flex-direction: column;
+            }
+
+            .unit-toggle {
+                flex-direction: row;
+            }
+        }
+    </style>
+</head>
+<body class="has-bottom-nav">
+    <div class="container">
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1 class="page-title">Warmup Calculator</h1>
+            <p class="page-subtitle">Progressive warmup sets with plate breakdowns</p>
+        </header>
+
+        <!-- Calculator Card -->
+        <main class="card card-elevated">
+            <!-- Working Weight Input -->
+            <div class="form-group">
+                <label class="form-label" for="workingWeight">Working Weight</label>
+                <div class="input-row">
+                    <div class="form-group">
+                        <input
+                            type="number"
+                            id="workingWeight"
+                            class="input-weight"
+                            value="225"
+                            min="0"
+                            step="5"
+                            inputmode="decimal"
+                            autocomplete="off"
+                            aria-label="Working weight"
+                        >
+                    </div>
+                    <div class="unit-toggle" role="group" aria-label="Unit selection">
+                        <button class="unit-btn active" data-unit="lb" aria-pressed="true">LB</button>
+                        <button class="unit-btn" data-unit="kg" aria-pressed="false">KG</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bar Selection -->
+            <div class="form-group">
+                <label class="form-label" for="barWeight">Bar Type</label>
+                <select id="barWeight" class="bar-select" aria-label="Select bar type">
+                    <option value="45">Olympic Bar - 45 lb</option>
+                    <option value="35">Women's Olympic - 35 lb</option>
+                    <option value="15">Training Bar - 15 lb</option>
+                    <option value="0">No Bar (plates only)</option>
+                </select>
+            </div>
+
+            <!-- Number of Warmup Sets -->
+            <div class="form-group">
+                <label class="form-label">Warmup Sets</label>
+                <div class="set-count-control">
+                    <button class="set-count-btn" id="decreaseSets" aria-label="Decrease warmup sets">−</button>
+                    <span class="set-count-value" id="setCount">4</span>
+                    <button class="set-count-btn" id="increaseSets" aria-label="Increase warmup sets">+</button>
+                </div>
+            </div>
+
+            <!-- Warmup Sets Display -->
+            <div class="warmup-sets" id="warmupSets" role="region" aria-live="polite" aria-label="Warmup sets"></div>
+
+            <!-- Copy Button -->
+            <button class="btn btn-block btn-primary copy-btn" id="copyBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Copy Warmup
+            </button>
+            <div class="copy-success" id="copySuccess">Copied to clipboard!</div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Never skip your warmup. Your joints will thank you.</p>
+        </footer>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="nav-bottom" aria-label="Main navigation">
+        <a href="index.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="9"/>
+                <rect x="14" y="3" width="7" height="5"/>
+                <rect x="14" y="12" width="7" height="9"/>
+                <rect x="3" y="16" width="7" height="5"/>
+            </svg>
+            <span>Calculator</span>
+        </a>
+        <a href="warmup.html" class="nav-item active" aria-current="page">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+            </svg>
+            <span>Warmup</span>
+        </a>
+        <a href="531.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            <span>5/3/1</span>
+        </a>
+        <a href="inventory.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+            </svg>
+            <span>My Plates</span>
+        </a>
+    </nav>
+
+    <script>
+        // ===================================================================
+        // Warmup Calculator Logic
+        // ===================================================================
+
+        // Plate configurations
+        const PLATES = {
+            lb: [
+                { weight: 45, className: 'plate-45', color: '#2563eb', label: '45' },
+                { weight: 35, className: 'plate-35', color: '#eab308', label: '35' },
+                { weight: 25, className: 'plate-25', color: '#16a34a', label: '25' },
+                { weight: 10, className: 'plate-10', color: '#f5f5f5', label: '10' },
+                { weight: 5, className: 'plate-5', color: '#dc2626', label: '5' },
+                { weight: 2.5, className: 'plate-2-5', color: '#16a34a', label: '2.5' }
+            ],
+            kg: [
+                { weight: 20, className: 'plate-20kg', color: '#2563eb', label: '20' },
+                { weight: 15, className: 'plate-15kg', color: '#eab308', label: '15' },
+                { weight: 10, className: 'plate-10kg', color: '#16a34a', label: '10' },
+                { weight: 5, className: 'plate-5kg', color: '#f5f5f5', label: '5' },
+                { weight: 2.5, className: 'plate-2-5kg', color: '#dc2626', label: '2.5' },
+                { weight: 1.25, className: 'plate-1-25kg', color: '#16a34a', label: '1.25' }
+            ]
+        };
+
+        const BAR_WEIGHTS = {
+            lb: [
+                { value: 45, label: 'Olympic Bar - 45 lb' },
+                { value: 35, label: "Women's Olympic - 35 lb" },
+                { value: 15, label: 'Training Bar - 15 lb' },
+                { value: 0, label: 'No Bar (plates only)' }
+            ],
+            kg: [
+                { value: 20, label: 'Olympic Bar - 20 kg' },
+                { value: 15, label: "Women's Olympic - 15 kg" },
+                { value: 7, label: 'Training Bar - 7 kg' },
+                { value: 0, label: 'No Bar (plates only)' }
+            ]
+        };
+
+        // Standard warmup percentages (configurable)
+        const WARMUP_SCHEMES = {
+            3: [0.50, 0.70, 0.85],
+            4: [0.40, 0.60, 0.75, 0.90],
+            5: [0.40, 0.55, 0.70, 0.80, 0.90],
+            6: [0.30, 0.45, 0.60, 0.70, 0.80, 0.90]
+        };
+
+        // State
+        let currentUnit = 'lb';
+        let warmupSetCount = 4;
+
+        // DOM Elements
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => document.querySelectorAll(sel);
+
+        const workingWeightInput = $('#workingWeight');
+        const barWeightSelect = $('#barWeight');
+        const setCountDisplay = $('#setCount');
+        const warmupSetsDiv = $('#warmupSets');
+        const unitBtns = $$('.unit-btn');
+        const decreaseSetsBtn = $('#decreaseSets');
+        const increaseSetsBtn = $('#increaseSets');
+        const copyBtn = $('#copyBtn');
+        const copySuccess = $('#copySuccess');
+
+        // Calculate plates needed per side
+        function calculatePlates(targetWeight, barWeight, unit) {
+            const plates = PLATES[unit];
+            const weightPerSide = (targetWeight - barWeight) / 2;
+
+            if (weightPerSide < 0) return { plates: [], actualWeight: barWeight };
+
+            const result = [];
+            let remaining = weightPerSide;
+
+            for (const plate of plates) {
+                const count = Math.floor(remaining / plate.weight);
+                if (count > 0) {
+                    result.push({ ...plate, count });
+                    remaining = Math.round((remaining - count * plate.weight) * 100) / 100;
+                }
+            }
+
+            const actualWeight = targetWeight - (remaining * 2);
+            return { plates: result, actualWeight: Math.round(actualWeight * 100) / 100 };
+        }
+
+        // Round to nearest achievable weight
+        function roundToPlates(weight, barWeight, unit) {
+            const smallestPlate = unit === 'lb' ? 2.5 : 1.25;
+            const increment = smallestPlate * 2; // Both sides
+            const platesWeight = weight - barWeight;
+            const roundedPlates = Math.round(platesWeight / increment) * increment;
+            return Math.max(barWeight, barWeight + roundedPlates);
+        }
+
+        // Generate warmup sets
+        function generateWarmupSets(workingWeight, barWeight, numSets, unit) {
+            const percentages = WARMUP_SCHEMES[numSets] || WARMUP_SCHEMES[4];
+            const sets = [];
+
+            // Always start with bar only
+            sets.push({
+                label: 'Bar Only',
+                weight: barWeight,
+                percentage: null,
+                plates: [],
+                isBarOnly: true
+            });
+
+            // Add warmup sets based on percentages
+            for (let i = 0; i < percentages.length; i++) {
+                const pct = percentages[i];
+                const rawWeight = workingWeight * pct;
+                const roundedWeight = roundToPlates(rawWeight, barWeight, unit);
+                const { plates, actualWeight } = calculatePlates(roundedWeight, barWeight, unit);
+
+                sets.push({
+                    label: `Warmup ${i + 1}`,
+                    weight: actualWeight,
+                    percentage: Math.round(pct * 100),
+                    plates
+                });
+            }
+
+            // Add working set
+            const { plates, actualWeight } = calculatePlates(workingWeight, barWeight, unit);
+            sets.push({
+                label: 'Working Set',
+                weight: actualWeight,
+                percentage: 100,
+                plates,
+                isWorkingSet: true
+            });
+
+            return sets;
+        }
+
+        // Render mini barbell
+        function renderMiniBarbell(plates) {
+            if (!plates || plates.length === 0) {
+                return '<div class="mini-barbell"><div class="mini-bar"></div></div>';
+            }
+
+            let platesHtml = '';
+            for (const plate of plates) {
+                for (let i = 0; i < plate.count; i++) {
+                    const height = Math.min(30, 10 + plate.weight);
+                    platesHtml += `<div class="mini-plate" style="background:${plate.color};width:4px;height:${height}px"></div>`;
+                }
+            }
+
+            return `
+                <div class="mini-barbell">
+                    <div class="mini-bar" style="position:relative">
+                        <div class="mini-plates left">${platesHtml}</div>
+                        <div class="mini-plates right">${platesHtml}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render warmup sets
+        function renderWarmupSets(sets, unit) {
+            const unitLabel = unit.toUpperCase();
+
+            return sets.map((set, index) => {
+                const isWorking = set.isWorkingSet;
+                const pctLabel = set.percentage ? `<span class="set-percentage">${set.percentage}%</span>` : '';
+
+                let platesHtml = '';
+                if (set.isBarOnly) {
+                    platesHtml = '<span class="text-muted">Empty bar</span>';
+                } else if (set.plates.length === 0) {
+                    platesHtml = '<span class="text-muted">Empty bar</span>';
+                } else {
+                    platesHtml = set.plates.map(p =>
+                        `<span class="plate-tag">
+                            <span class="plate-tag-color" style="background:${p.color}"></span>
+                            ${p.count}x ${p.weight}
+                        </span>`
+                    ).join('');
+                }
+
+                return `
+                    <div class="warmup-set ${isWorking ? 'working-set' : ''}" data-index="${index}">
+                        <div class="warmup-set-header">
+                            <div class="set-info">
+                                <span class="set-number">${index + 1}</span>
+                                <span class="set-label">${set.label}</span>
+                            </div>
+                            <div>
+                                <span class="set-weight">${set.weight} ${unitLabel}</span>
+                                ${pctLabel}
+                            </div>
+                        </div>
+                        <div class="warmup-set-body">
+                            <div class="plates-label">Plates per side:</div>
+                            <div class="plate-list-compact">${platesHtml}</div>
+                            ${renderMiniBarbell(set.plates)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update bar options
+        function updateBarOptions() {
+            const options = BAR_WEIGHTS[currentUnit];
+            barWeightSelect.innerHTML = options.map(opt =>
+                `<option value="${opt.value}">${opt.label}</option>`
+            ).join('');
+        }
+
+        // Main update function
+        function update() {
+            const workingWeight = parseFloat(workingWeightInput.value) || 0;
+            const barWeight = parseFloat(barWeightSelect.value) || 0;
+
+            if (workingWeight < barWeight) {
+                warmupSetsDiv.innerHTML = `<div class="message message-error">Working weight must be at least ${barWeight} ${currentUnit.toUpperCase()} (bar weight)</div>`;
+                return;
+            }
+
+            const sets = generateWarmupSets(workingWeight, barWeight, warmupSetCount, currentUnit);
+            warmupSetsDiv.innerHTML = renderWarmupSets(sets, currentUnit);
+
+            // Save state
+            localStorage.setItem('warmupCalc', JSON.stringify({
+                workingWeight,
+                barWeight,
+                unit: currentUnit,
+                setCount: warmupSetCount
+            }));
+        }
+
+        // Copy warmup to clipboard
+        function copyWarmup() {
+            const workingWeight = parseFloat(workingWeightInput.value) || 0;
+            const barWeight = parseFloat(barWeightSelect.value) || 0;
+            const unitLabel = currentUnit.toUpperCase();
+            const sets = generateWarmupSets(workingWeight, barWeight, warmupSetCount, currentUnit);
+
+            const text = sets.map((set, i) => {
+                const platesText = set.isBarOnly || set.plates.length === 0
+                    ? 'Empty bar'
+                    : set.plates.map(p => `${p.count}x${p.weight}`).join(' + ');
+                const pct = set.percentage ? ` (${set.percentage}%)` : '';
+                return `${i + 1}. ${set.label}: ${set.weight} ${unitLabel}${pct}\n   Plates/side: ${platesText}`;
+            }).join('\n\n');
+
+            navigator.clipboard.writeText(text).then(() => {
+                copySuccess.classList.add('show');
+                setTimeout(() => copySuccess.classList.remove('show'), 2000);
+            });
+        }
+
+        // Event Listeners
+        workingWeightInput.addEventListener('input', update);
+        barWeightSelect.addEventListener('change', update);
+
+        unitBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                unitBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-pressed', 'false');
+                });
+                btn.classList.add('active');
+                btn.setAttribute('aria-pressed', 'true');
+
+                const newUnit = btn.dataset.unit;
+                const currentWeight = parseFloat(workingWeightInput.value) || 0;
+
+                if (newUnit === 'kg' && currentUnit === 'lb') {
+                    workingWeightInput.value = Math.round(currentWeight / 2.205);
+                } else if (newUnit === 'lb' && currentUnit === 'kg') {
+                    workingWeightInput.value = Math.round(currentWeight * 2.205);
+                }
+
+                currentUnit = newUnit;
+                updateBarOptions();
+                update();
+            });
+        });
+
+        decreaseSetsBtn.addEventListener('click', () => {
+            if (warmupSetCount > 3) {
+                warmupSetCount--;
+                setCountDisplay.textContent = warmupSetCount;
+                update();
+            }
+        });
+
+        increaseSetsBtn.addEventListener('click', () => {
+            if (warmupSetCount < 6) {
+                warmupSetCount++;
+                setCountDisplay.textContent = warmupSetCount;
+                update();
+            }
+        });
+
+        copyBtn.addEventListener('click', copyWarmup);
+
+        // Load saved state
+        function loadState() {
+            const saved = localStorage.getItem('warmupCalc');
+            if (saved) {
+                try {
+                    const state = JSON.parse(saved);
+                    currentUnit = state.unit || 'lb';
+                    warmupSetCount = state.setCount || 4;
+
+                    unitBtns.forEach(btn => {
+                        const isActive = btn.dataset.unit === currentUnit;
+                        btn.classList.toggle('active', isActive);
+                        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                    });
+
+                    updateBarOptions();
+                    setCountDisplay.textContent = warmupSetCount;
+                    workingWeightInput.value = state.workingWeight || 225;
+                    barWeightSelect.value = state.barWeight || (currentUnit === 'lb' ? 45 : 20);
+                } catch (e) {
+                    updateBarOptions();
+                }
+            } else {
+                updateBarOptions();
+            }
+        }
+
+        // Initialize
+        loadState();
+        update();
+    </script>
+</body>
+</html>

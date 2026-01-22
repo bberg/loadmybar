@@ -1,0 +1,29 @@
+    properties = {
+        "Position": {
+            "number": {}
+        },
+        "Title": {
+            "title": {}
+        },
+        "Link": {
+            "url": {}
+        },
+        "Snippet": {
+            "rich_text": {}
+        },
+        "Homepage Content": {
+            "rich_text": {}
+        },
+        "Logo": {
+            "rich_text": {}
+        },
+        "Summary": {
+            "rich_text": {}
+        },
+        "Omit": {
+            "checkbox": {}
+        },
+        "Manual Logo": {
+            "checkbox": {}
+        }
+    }

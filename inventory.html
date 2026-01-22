@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>My Plates - Gym Inventory Manager</title>
+    <meta name="description" content="Save your gym's plate inventory. Get accurate plate calculations based on what's actually available.">
+    <meta name="theme-color" content="#0d1117">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="styles/shared.css">
+    <style>
+        /* Page-specific styles */
+        .gym-selector {
+            display: flex;
+            gap: var(--space-3);
+            margin-bottom: var(--space-5);
+            align-items: stretch;
+        }
+
+        .gym-select {
+            flex: 1;
+            min-height: var(--touch-target-min);
+            padding: var(--space-3) var(--space-4);
+            font-size: var(--text-base);
+            font-weight: var(--font-medium);
+            background: var(--bg-primary);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 20px;
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            padding-right: 44px;
+        }
+
+        .gym-select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .gym-actions {
+            display: flex;
+            gap: var(--space-2);
+        }
+
+        .icon-btn {
+            width: var(--touch-target-min);
+            height: var(--touch-target-min);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .icon-btn:hover {
+            background: var(--border-default);
+            color: var(--text-primary);
+        }
+
+        .icon-btn.danger:hover {
+            background: rgba(248, 81, 73, 0.15);
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        /* Unit toggle */
+        .unit-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-5);
+            padding-bottom: var(--space-4);
+            border-bottom: 1px solid var(--border-muted);
+        }
+
+        .unit-label {
+            font-weight: var(--font-medium);
+        }
+
+        .toggle-group {
+            display: flex;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .toggle-btn {
+            padding: var(--space-2) var(--space-4);
+            font-size: var(--text-sm);
+            font-weight: var(--font-bold);
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .toggle-btn.active {
+            background: var(--accent-green-emphasis);
+            color: var(--text-on-emphasis);
+        }
+
+        .toggle-btn:not(.active):hover {
+            background: var(--bg-tertiary);
+        }
+
+        /* Plate inventory grid */
+        .plate-grid {
+            display: grid;
+            gap: var(--space-3);
+        }
+
+        .plate-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            transition: all var(--transition-fast);
+        }
+
+        .plate-row.enabled {
+            border-color: var(--accent-green);
+            background: rgba(35, 134, 54, 0.05);
+        }
+
+        .plate-row.disabled {
+            opacity: 0.5;
+        }
+
+        .plate-toggle {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-default);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            flex-shrink: 0;
+        }
+
+        .plate-toggle.checked {
+            background: var(--accent-green-emphasis);
+            border-color: var(--accent-green-emphasis);
+        }
+
+        .plate-toggle svg {
+            width: 24px;
+            height: 24px;
+            color: transparent;
+        }
+
+        .plate-toggle.checked svg {
+            color: #fff;
+        }
+
+        .plate-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .plate-color-indicator {
+            width: 24px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            flex-shrink: 0;
+        }
+
+        .plate-details {
+            flex: 1;
+        }
+
+        .plate-weight {
+            font-size: var(--text-lg);
+            font-weight: var(--font-bold);
+        }
+
+        .plate-type {
+            font-size: var(--text-xs);
+            color: var(--text-secondary);
+        }
+
+        /* Quantity control */
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .qty-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-lg);
+            font-weight: var(--font-bold);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .qty-btn:hover {
+            background: var(--border-default);
+        }
+
+        .qty-btn:active {
+            transform: scale(0.95);
+        }
+
+        .qty-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .qty-value {
+            min-width: 40px;
+            text-align: center;
+            font-size: var(--text-lg);
+            font-weight: var(--font-bold);
+        }
+
+        .qty-label {
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            margin-left: var(--space-1);
+        }
+
+        /* Test calculator section */
+        .test-section {
+            margin-top: var(--space-6);
+            padding-top: var(--space-5);
+            border-top: 1px solid var(--border-muted);
+        }
+
+        .test-header {
+            font-size: var(--text-lg);
+            font-weight: var(--font-semibold);
+            margin-bottom: var(--space-4);
+        }
+
+        .test-input-row {
+            display: flex;
+            gap: var(--space-3);
+            align-items: center;
+        }
+
+        .test-input {
+            flex: 1;
+            padding: var(--space-3);
+            font-size: var(--text-xl);
+            font-weight: var(--font-bold);
+            text-align: center;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+        }
+
+        .test-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .test-result {
+            margin-top: var(--space-4);
+            padding: var(--space-4);
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+        }
+
+        .test-result-plates {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+        }
+
+        .test-plate-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: var(--space-2) var(--space-3);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            font-weight: var(--font-medium);
+        }
+
+        .test-plate-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .test-total {
+            margin-top: var(--space-3);
+            padding-top: var(--space-3);
+            border-top: 1px solid var(--border-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .test-total-label {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+
+        .test-total-weight {
+            font-size: var(--text-xl);
+            font-weight: var(--font-bold);
+            color: var(--accent-green);
+        }
+
+        /* Modal for new gym */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-4);
+            z-index: var(--z-modal-backdrop);
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-fast);
+        }
+
+        .modal-backdrop.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 400px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            transform: scale(0.95);
+            transition: transform var(--transition-fast);
+        }
+
+        .modal-backdrop.show .modal {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: var(--text-xl);
+            font-weight: var(--font-semibold);
+            margin-bottom: var(--space-4);
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: var(--space-3) var(--space-4);
+            font-size: var(--text-base);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            margin-bottom: var(--space-4);
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: var(--space-3);
+            justify-content: flex-end;
+        }
+
+        /* Presets */
+        .presets-section {
+            margin-bottom: var(--space-5);
+        }
+
+        .presets-label {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-2);
+        }
+
+        .presets-row {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            padding: var(--space-2) var(--space-3);
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-full);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .preset-btn:hover {
+            background: var(--border-default);
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body class="has-bottom-nav">
+    <div class="container">
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1 class="page-title">My Plates</h1>
+            <p class="page-subtitle">Save your gym's available plates</p>
+        </header>
+
+        <!-- Main Card -->
+        <main class="card card-elevated">
+            <!-- Gym Selector -->
+            <div class="gym-selector">
+                <select id="gymSelect" class="gym-select" aria-label="Select gym profile">
+                    <option value="default">My Gym</option>
+                </select>
+                <div class="gym-actions">
+                    <button class="icon-btn" id="addGymBtn" aria-label="Add new gym profile">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                    </button>
+                    <button class="icon-btn danger" id="deleteGymBtn" aria-label="Delete gym profile">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Unit Selection -->
+            <div class="unit-section">
+                <span class="unit-label">Unit</span>
+                <div class="toggle-group" id="unitToggle">
+                    <button class="toggle-btn active" data-unit="lb">LB</button>
+                    <button class="toggle-btn" data-unit="kg">KG</button>
+                </div>
+            </div>
+
+            <!-- Presets -->
+            <div class="presets-section">
+                <div class="presets-label">Quick setup:</div>
+                <div class="presets-row">
+                    <button class="preset-btn" data-preset="commercial">Commercial Gym</button>
+                    <button class="preset-btn" data-preset="home">Home Gym</button>
+                    <button class="preset-btn" data-preset="crossfit">CrossFit Box</button>
+                    <button class="preset-btn" data-preset="minimal">Minimal</button>
+                </div>
+            </div>
+
+            <!-- Plate Inventory -->
+            <div class="plate-grid" id="plateGrid">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Test Calculator -->
+            <div class="test-section">
+                <h3 class="test-header">Test Your Inventory</h3>
+                <div class="test-input-row">
+                    <input
+                        type="number"
+                        id="testWeight"
+                        class="test-input"
+                        value="225"
+                        min="0"
+                        step="5"
+                        inputmode="decimal"
+                        aria-label="Test weight"
+                    >
+                    <span id="testUnit" style="font-weight:var(--font-bold);color:var(--text-secondary)">LB</span>
+                </div>
+                <div class="test-result" id="testResult">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Your inventory is saved locally on this device.</p>
+        </footer>
+    </div>
+
+    <!-- Modal for new gym -->
+    <div class="modal-backdrop" id="modal">
+        <div class="modal">
+            <h3 class="modal-title" id="modalTitle">Add New Gym</h3>
+            <input
+                type="text"
+                class="modal-input"
+                id="modalInput"
+                placeholder="Gym name"
+                maxlength="30"
+            >
+            <div class="modal-actions">
+                <button class="btn btn-ghost" id="modalCancel">Cancel</button>
+                <button class="btn btn-primary" id="modalConfirm">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="nav-bottom" aria-label="Main navigation">
+        <a href="index.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="9"/>
+                <rect x="14" y="3" width="7" height="5"/>
+                <rect x="14" y="12" width="7" height="9"/>
+                <rect x="3" y="16" width="7" height="5"/>
+            </svg>
+            <span>Calculator</span>
+        </a>
+        <a href="warmup.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+            </svg>
+            <span>Warmup</span>
+        </a>
+        <a href="531.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            <span>5/3/1</span>
+        </a>
+        <a href="inventory.html" class="nav-item active" aria-current="page">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+            </svg>
+            <span>My Plates</span>
+        </a>
+    </nav>
+
+    <script>
+        // ===================================================================
+        // Inventory Manager Logic
+        // ===================================================================
+
+        // Plate definitions
+        const PLATE_DEFS = {
+            lb: [
+                { weight: 55, color: '#dc2626', type: 'Competition bumper' },
+                { weight: 45, color: '#2563eb', type: 'Standard olympic' },
+                { weight: 35, color: '#eab308', type: 'Olympic plate' },
+                { weight: 25, color: '#16a34a', type: 'Olympic plate' },
+                { weight: 10, color: '#f5f5f5', type: 'Change plate' },
+                { weight: 5, color: '#dc2626', type: 'Change plate' },
+                { weight: 2.5, color: '#16a34a', type: 'Fractional plate' },
+                { weight: 1.25, color: '#6b7280', type: 'Micro plate' }
+            ],
+            kg: [
+                { weight: 25, color: '#dc2626', type: 'Competition bumper' },
+                { weight: 20, color: '#2563eb', type: 'Standard olympic' },
+                { weight: 15, color: '#eab308', type: 'Olympic plate' },
+                { weight: 10, color: '#16a34a', type: 'Olympic plate' },
+                { weight: 5, color: '#f5f5f5', type: 'Change plate' },
+                { weight: 2.5, color: '#dc2626', type: 'Change plate' },
+                { weight: 1.25, color: '#16a34a', type: 'Fractional plate' },
+                { weight: 0.5, color: '#6b7280', type: 'Micro plate' }
+            ]
+        };
+
+        // Presets (pairs per plate)
+        const PRESETS = {
+            commercial: {
+                lb: { 55: 0, 45: 10, 35: 4, 25: 4, 10: 4, 5: 4, 2.5: 2, 1.25: 0 },
+                kg: { 25: 0, 20: 10, 15: 4, 10: 4, 5: 4, 2.5: 4, 1.25: 2, 0.5: 0 }
+            },
+            home: {
+                lb: { 55: 0, 45: 4, 35: 0, 25: 2, 10: 4, 5: 4, 2.5: 2, 1.25: 0 },
+                kg: { 25: 0, 20: 4, 15: 0, 10: 2, 5: 4, 2.5: 2, 1.25: 2, 0.5: 0 }
+            },
+            crossfit: {
+                lb: { 55: 2, 45: 6, 35: 4, 25: 4, 10: 6, 5: 4, 2.5: 2, 1.25: 2 },
+                kg: { 25: 2, 20: 6, 15: 4, 10: 4, 5: 6, 2.5: 4, 1.25: 2, 0.5: 2 }
+            },
+            minimal: {
+                lb: { 55: 0, 45: 2, 35: 0, 25: 2, 10: 2, 5: 2, 2.5: 2, 1.25: 0 },
+                kg: { 25: 0, 20: 2, 15: 0, 10: 2, 5: 2, 2.5: 2, 1.25: 0, 0.5: 0 }
+            }
+        };
+
+        const DEFAULT_BAR = { lb: 45, kg: 20 };
+
+        // State
+        let currentUnit = 'lb';
+        let currentGym = 'default';
+        let gyms = {};
+
+        // DOM Elements
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => document.querySelectorAll(sel);
+
+        const gymSelect = $('#gymSelect');
+        const plateGrid = $('#plateGrid');
+        const testWeightInput = $('#testWeight');
+        const testUnitDisplay = $('#testUnit');
+        const testResult = $('#testResult');
+        const unitBtns = $$('#unitToggle .toggle-btn');
+        const modal = $('#modal');
+        const modalInput = $('#modalInput');
+
+        // Get current gym inventory
+        function getCurrentInventory() {
+            if (!gyms[currentGym]) {
+                gyms[currentGym] = {
+                    name: 'My Gym',
+                    plates: { ...PRESETS.home[currentUnit] }
+                };
+            }
+            return gyms[currentGym].plates;
+        }
+
+        // Calculate plates using only available inventory
+        function calculateWithInventory(targetWeight, barWeight, unit) {
+            const plateDefs = PLATE_DEFS[unit];
+            const inventory = getCurrentInventory();
+            const weightPerSide = (targetWeight - barWeight) / 2;
+
+            if (weightPerSide < 0) {
+                return { plates: [], actualWeight: barWeight, error: true };
+            }
+
+            const result = [];
+            let remaining = weightPerSide;
+
+            for (const plate of plateDefs) {
+                const available = Math.floor((inventory[plate.weight] || 0) / 2); // Pairs
+                if (available <= 0) continue;
+
+                const needed = Math.floor(remaining / plate.weight);
+                const used = Math.min(needed, available);
+
+                if (used > 0) {
+                    result.push({ ...plate, count: used });
+                    remaining = Math.round((remaining - used * plate.weight) * 100) / 100;
+                }
+            }
+
+            const actualWeight = targetWeight - (remaining * 2);
+            return {
+                plates: result,
+                actualWeight: Math.round(actualWeight * 100) / 100,
+                remainder: remaining
+            };
+        }
+
+        // Render plate grid
+        function renderPlateGrid() {
+            const plateDefs = PLATE_DEFS[currentUnit];
+            const inventory = getCurrentInventory();
+            const unitLabel = currentUnit.toUpperCase();
+
+            plateGrid.innerHTML = plateDefs.map(plate => {
+                const qty = inventory[plate.weight] || 0;
+                const enabled = qty > 0;
+
+                return `
+                    <div class="plate-row ${enabled ? 'enabled' : ''}" data-weight="${plate.weight}">
+                        <button
+                            class="plate-toggle ${enabled ? 'checked' : ''}"
+                            aria-label="Toggle ${plate.weight} ${unitLabel} plates"
+                            data-weight="${plate.weight}"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </button>
+                        <div class="plate-info">
+                            <div class="plate-color-indicator" style="background:${plate.color}"></div>
+                            <div class="plate-details">
+                                <div class="plate-weight">${plate.weight} ${unitLabel}</div>
+                                <div class="plate-type">${plate.type}</div>
+                            </div>
+                        </div>
+                        <div class="quantity-control">
+                            <button class="qty-btn" data-action="decrease" data-weight="${plate.weight}" ${qty <= 0 ? 'disabled' : ''}>−</button>
+                            <span class="qty-value">${qty}</span>
+                            <button class="qty-btn" data-action="increase" data-weight="${plate.weight}">+</button>
+                            <span class="qty-label">pairs</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render test result
+        function renderTestResult() {
+            const testWeight = parseFloat(testWeightInput.value) || 0;
+            const barWeight = DEFAULT_BAR[currentUnit];
+            const unitLabel = currentUnit.toUpperCase();
+            const data = calculateWithInventory(testWeight, barWeight, currentUnit);
+
+            if (testWeight < barWeight) {
+                testResult.innerHTML = `<div class="message message-error">Weight must be at least ${barWeight} ${unitLabel} (bar)</div>`;
+                return;
+            }
+
+            let platesHtml = '';
+            if (data.plates.length === 0) {
+                platesHtml = '<span style="color:var(--text-muted)">Empty bar</span>';
+            } else {
+                platesHtml = data.plates.map(p => `
+                    <span class="test-plate-tag">
+                        <span class="test-plate-dot" style="background:${p.color}"></span>
+                        ${p.count}x ${p.weight}
+                    </span>
+                `).join('');
+            }
+
+            let warningHtml = '';
+            if (data.remainder > 0.01) {
+                warningHtml = `<div class="message message-warning mt-4">Missing plates for exact weight. Closest: ${data.actualWeight} ${unitLabel}</div>`;
+            }
+
+            testResult.innerHTML = `
+                <div class="test-result-plates">${platesHtml}</div>
+                ${warningHtml}
+                <div class="test-total">
+                    <span class="test-total-label">Total Weight</span>
+                    <span class="test-total-weight">${data.actualWeight} ${unitLabel}</span>
+                </div>
+            `;
+        }
+
+        // Update gym dropdown
+        function updateGymDropdown() {
+            gymSelect.innerHTML = Object.entries(gyms).map(([id, gym]) =>
+                `<option value="${id}" ${id === currentGym ? 'selected' : ''}>${gym.name}</option>`
+            ).join('');
+        }
+
+        // Save to localStorage
+        function saveState() {
+            localStorage.setItem('plateInventory', JSON.stringify({
+                unit: currentUnit,
+                currentGym,
+                gyms
+            }));
+        }
+
+        // Load from localStorage
+        function loadState() {
+            const saved = localStorage.getItem('plateInventory');
+            if (saved) {
+                try {
+                    const state = JSON.parse(saved);
+                    currentUnit = state.unit || 'lb';
+                    currentGym = state.currentGym || 'default';
+                    gyms = state.gyms || {};
+                } catch (e) {
+                    console.error('Error loading state:', e);
+                }
+            }
+
+            // Ensure default gym exists
+            if (!gyms[currentGym]) {
+                gyms.default = {
+                    name: 'My Gym',
+                    plates: { ...PRESETS.home[currentUnit] }
+                };
+                currentGym = 'default';
+            }
+        }
+
+        // Update UI
+        function updateUI() {
+            unitBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.unit === currentUnit);
+            });
+
+            testUnitDisplay.textContent = currentUnit.toUpperCase();
+            updateGymDropdown();
+            renderPlateGrid();
+            renderTestResult();
+        }
+
+        // Modal functions
+        function showModal(title, value = '') {
+            $('#modalTitle').textContent = title;
+            modalInput.value = value;
+            modal.classList.add('show');
+            modalInput.focus();
+        }
+
+        function hideModal() {
+            modal.classList.remove('show');
+        }
+
+        // Event Listeners
+        unitBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentUnit = btn.dataset.unit;
+
+                // Convert test weight
+                const testWeight = parseFloat(testWeightInput.value) || 0;
+                if (currentUnit === 'kg') {
+                    testWeightInput.value = Math.round(testWeight / 2.205);
+                } else {
+                    testWeightInput.value = Math.round(testWeight * 2.205);
+                }
+
+                // Ensure inventory exists for this unit
+                if (!gyms[currentGym].plates || !gyms[currentGym].plates[PLATE_DEFS[currentUnit][0].weight]) {
+                    gyms[currentGym].plates = { ...PRESETS.home[currentUnit] };
+                }
+
+                updateUI();
+                saveState();
+            });
+        });
+
+        gymSelect.addEventListener('change', () => {
+            currentGym = gymSelect.value;
+            updateUI();
+            saveState();
+        });
+
+        $('#addGymBtn').addEventListener('click', () => {
+            showModal('Add New Gym');
+        });
+
+        $('#deleteGymBtn').addEventListener('click', () => {
+            if (Object.keys(gyms).length <= 1) {
+                alert('Cannot delete the only gym profile.');
+                return;
+            }
+            if (confirm(`Delete "${gyms[currentGym].name}"?`)) {
+                delete gyms[currentGym];
+                currentGym = Object.keys(gyms)[0];
+                updateUI();
+                saveState();
+            }
+        });
+
+        $('#modalCancel').addEventListener('click', hideModal);
+
+        $('#modalConfirm').addEventListener('click', () => {
+            const name = modalInput.value.trim();
+            if (name) {
+                const id = 'gym_' + Date.now();
+                gyms[id] = {
+                    name,
+                    plates: { ...PRESETS.home[currentUnit] }
+                };
+                currentGym = id;
+                hideModal();
+                updateUI();
+                saveState();
+            }
+        });
+
+        modalInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') $('#modalConfirm').click();
+            if (e.key === 'Escape') hideModal();
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) hideModal();
+        });
+
+        // Plate toggle
+        plateGrid.addEventListener('click', (e) => {
+            const toggle = e.target.closest('.plate-toggle');
+            if (toggle) {
+                const weight = parseFloat(toggle.dataset.weight);
+                const inventory = getCurrentInventory();
+                if (inventory[weight] > 0) {
+                    inventory[weight] = 0;
+                } else {
+                    inventory[weight] = 4; // Default to 4 pairs when enabling
+                }
+                renderPlateGrid();
+                renderTestResult();
+                saveState();
+            }
+        });
+
+        // Quantity buttons
+        plateGrid.addEventListener('click', (e) => {
+            const qtyBtn = e.target.closest('.qty-btn');
+            if (qtyBtn) {
+                const weight = parseFloat(qtyBtn.dataset.weight);
+                const action = qtyBtn.dataset.action;
+                const inventory = getCurrentInventory();
+
+                if (action === 'increase') {
+                    inventory[weight] = (inventory[weight] || 0) + 1;
+                } else if (action === 'decrease' && inventory[weight] > 0) {
+                    inventory[weight]--;
+                }
+
+                renderPlateGrid();
+                renderTestResult();
+                saveState();
+            }
+        });
+
+        // Presets
+        $$('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const preset = btn.dataset.preset;
+                gyms[currentGym].plates = { ...PRESETS[preset][currentUnit] };
+                renderPlateGrid();
+                renderTestResult();
+                saveState();
+            });
+        });
+
+        // Test weight input
+        testWeightInput.addEventListener('input', renderTestResult);
+
+        // Initialize
+        loadState();
+        updateUI();
+    </script>
+</body>
+</html>

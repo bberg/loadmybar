@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Plate Calculator - Barbell Weight Loading Made Easy</title>
+    <meta name="description" content="Free barbell plate calculator. Instantly see which plates to load for any weight. Works offline, no signup required.">
+    <meta name="theme-color" content="#0d1117">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="styles/shared.css">
+    <style>
+        /* Page-specific styles */
+        .hero-section {
+            padding: var(--space-4) 0;
+        }
+
+        .hero-title {
+            font-size: var(--text-3xl);
+            font-weight: var(--font-bold);
+            text-align: center;
+            margin-bottom: var(--space-1);
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            margin-bottom: var(--space-5);
+        }
+
+        @media (min-width: 768px) {
+            .hero-section {
+                padding: var(--space-8) 0;
+            }
+            .hero-title {
+                font-size: var(--text-4xl);
+            }
+            .hero-subtitle {
+                font-size: var(--text-base);
+            }
+        }
+
+        /* Calculator-specific input styling */
+        .weight-input-container {
+            position: relative;
+        }
+
+        .weight-input-wrapper {
+            display: flex;
+            gap: var(--space-3);
+            align-items: stretch;
+        }
+
+        .weight-input-field {
+            flex: 1;
+        }
+
+        .input-weight {
+            width: 100%;
+            font-size: var(--text-4xl);
+            font-weight: var(--font-bold);
+            text-align: center;
+            padding: var(--space-5);
+            min-height: 80px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            transition: all var(--transition-fast);
+        }
+
+        .input-weight:focus {
+            border-color: var(--accent-blue);
+            box-shadow: var(--shadow-glow-blue);
+            outline: none;
+        }
+
+        /* Unit toggle */
+        .unit-toggle {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .unit-btn {
+            padding: var(--space-3) var(--space-5);
+            font-size: var(--text-lg);
+            font-weight: var(--font-bold);
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            min-width: 60px;
+        }
+
+        .unit-btn.active {
+            background: var(--accent-green-emphasis);
+            color: var(--text-on-emphasis);
+        }
+
+        .unit-btn:not(.active):hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        /* Bar weight selector */
+        .bar-select-wrapper {
+            margin-top: var(--space-4);
+        }
+
+        .bar-select {
+            width: 100%;
+            min-height: var(--touch-target-min);
+            padding: var(--space-3) var(--space-4);
+            font-size: var(--text-base);
+            font-weight: var(--font-medium);
+            background: var(--bg-primary);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 20px;
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            padding-right: 44px;
+        }
+
+        .bar-select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+        }
+
+        /* Features section */
+        .features-section {
+            margin-top: var(--space-8);
+            padding-top: var(--space-6);
+            border-top: 1px solid var(--border-muted);
+        }
+
+        .features-title {
+            text-align: center;
+            font-size: var(--text-lg);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-6);
+        }
+
+        .feature-card {
+            padding: var(--space-5);
+        }
+
+        .feature-card .feature-icon {
+            width: 40px;
+            height: 40px;
+        }
+
+        /* Sticky calculator on scroll (mobile) */
+        @media (max-width: 767px) {
+            .calculator-sticky {
+                position: sticky;
+                top: 0;
+                z-index: var(--z-sticky);
+                background: var(--bg-secondary);
+                margin: 0 calc(-1 * var(--space-4));
+                padding: var(--space-4);
+                border-bottom: 1px solid var(--border-default);
+            }
+        }
+
+        /* Plate animation on load */
+        .plate {
+            animation: plateLoad 0.3s ease-out backwards;
+        }
+
+        @keyframes plateLoad {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .plates-side.right .plate {
+            animation-name: plateLoadRight;
+        }
+
+        @keyframes plateLoadRight {
+            from {
+                opacity: 0;
+                transform: translateX(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body class="has-bottom-nav">
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <h1 class="hero-title">Plate Calculator</h1>
+            <p class="hero-subtitle">Know exactly which plates to load. Every time.</p>
+        </section>
+
+        <!-- Main Calculator Card -->
+        <main class="card card-elevated">
+            <!-- Weight Input -->
+            <div class="form-group">
+                <label class="form-label" for="targetWeight">Target Weight</label>
+                <div class="weight-input-wrapper">
+                    <div class="weight-input-field">
+                        <input
+                            type="number"
+                            id="targetWeight"
+                            class="input-weight"
+                            value="135"
+                            min="0"
+                            step="5"
+                            inputmode="decimal"
+                            autocomplete="off"
+                            aria-label="Target weight"
+                        >
+                    </div>
+                    <div class="unit-toggle" role="group" aria-label="Unit selection">
+                        <button class="unit-btn active" data-unit="lb" aria-pressed="true">LB</button>
+                        <button class="unit-btn" data-unit="kg" aria-pressed="false">KG</button>
+                    </div>
+                </div>
+
+                <!-- Quick Weight Buttons -->
+                <div class="quick-weights" id="quickWeights" aria-label="Quick weight presets"></div>
+            </div>
+
+            <!-- Bar Selection -->
+            <div class="form-group bar-select-wrapper">
+                <label class="form-label" for="barWeight">Bar Type</label>
+                <select id="barWeight" class="bar-select" aria-label="Select bar type">
+                    <option value="45">Olympic Bar - 45 lb</option>
+                    <option value="35">Women's Olympic - 35 lb</option>
+                    <option value="33">Technique Bar - 33 lb</option>
+                    <option value="15">Training Bar - 15 lb</option>
+                    <option value="0">No Bar (plates only)</option>
+                </select>
+            </div>
+
+            <!-- Barbell Visualization -->
+            <div class="barbell-container" aria-hidden="true">
+                <div class="barbell">
+                    <div class="plates-side left" id="platesLeft"></div>
+                    <div class="bar">
+                        <div class="sleeve left"></div>
+                        <div class="sleeve right"></div>
+                    </div>
+                    <div class="plates-side right" id="platesRight"></div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="results" class="results-section" role="region" aria-live="polite" aria-label="Plate calculation results"></div>
+        </main>
+
+        <!-- Features Section -->
+        <section class="features-section">
+            <h2 class="features-title">More Tools</h2>
+            <div class="feature-grid">
+                <a href="warmup.html" class="feature-card">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+                    </svg>
+                    <h3 class="feature-title">Warmup Sets</h3>
+                    <p class="feature-description">Generate warmup progressions with plate breakdowns</p>
+                </a>
+                <a href="531.html" class="feature-card">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        <line x1="8" y1="7" x2="16" y2="7"/>
+                        <line x1="8" y1="11" x2="14" y2="11"/>
+                    </svg>
+                    <h3 class="feature-title">5/3/1 Program</h3>
+                    <p class="feature-description">Full Wendler 5/3/1 with plates for every set</p>
+                </a>
+                <a href="inventory.html" class="feature-card">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                    <h3 class="feature-title">My Plates</h3>
+                    <p class="feature-description">Save your gym's available plates</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>A free tool for lifters. No signup. No tracking. Just plates.</p>
+        </footer>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="nav-bottom" aria-label="Main navigation">
+        <a href="index.html" class="nav-item active" aria-current="page">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="9"/>
+                <rect x="14" y="3" width="7" height="5"/>
+                <rect x="14" y="12" width="7" height="9"/>
+                <rect x="3" y="16" width="7" height="5"/>
+            </svg>
+            <span>Calculator</span>
+        </a>
+        <a href="warmup.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+            </svg>
+            <span>Warmup</span>
+        </a>
+        <a href="531.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            <span>5/3/1</span>
+        </a>
+        <a href="inventory.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+            </svg>
+            <span>My Plates</span>
+        </a>
+    </nav>
+
+    <script>
+        // ===================================================================
+        // Plate Calculator Logic
+        // ===================================================================
+
+        // Plate configurations by unit
+        const PLATES = {
+            lb: [
+                { weight: 55, className: 'plate-55', color: '#dc2626', label: '55' },
+                { weight: 45, className: 'plate-45', color: '#2563eb', label: '45' },
+                { weight: 35, className: 'plate-35', color: '#eab308', label: '35' },
+                { weight: 25, className: 'plate-25', color: '#16a34a', label: '25' },
+                { weight: 10, className: 'plate-10', color: '#f5f5f5', label: '10' },
+                { weight: 5, className: 'plate-5', color: '#dc2626', label: '5' },
+                { weight: 2.5, className: 'plate-2-5', color: '#16a34a', label: '2.5' },
+                { weight: 1.25, className: 'plate-1-25', color: '#6b7280', label: '1.25' }
+            ],
+            kg: [
+                { weight: 25, className: 'plate-25kg', color: '#dc2626', label: '25' },
+                { weight: 20, className: 'plate-20kg', color: '#2563eb', label: '20' },
+                { weight: 15, className: 'plate-15kg', color: '#eab308', label: '15' },
+                { weight: 10, className: 'plate-10kg', color: '#16a34a', label: '10' },
+                { weight: 5, className: 'plate-5kg', color: '#f5f5f5', label: '5' },
+                { weight: 2.5, className: 'plate-2-5kg', color: '#dc2626', label: '2.5' },
+                { weight: 1.25, className: 'plate-1-25kg', color: '#16a34a', label: '1.25' }
+            ]
+        };
+
+        const BAR_WEIGHTS = {
+            lb: [
+                { value: 45, label: 'Olympic Bar - 45 lb' },
+                { value: 35, label: "Women's Olympic - 35 lb" },
+                { value: 33, label: 'Technique Bar - 33 lb' },
+                { value: 15, label: 'Training Bar - 15 lb' },
+                { value: 0, label: 'No Bar (plates only)' }
+            ],
+            kg: [
+                { value: 20, label: 'Olympic Bar - 20 kg' },
+                { value: 15, label: "Women's Olympic - 15 kg" },
+                { value: 10, label: 'Technique Bar - 10 kg' },
+                { value: 7, label: 'Training Bar - 7 kg' },
+                { value: 0, label: 'No Bar (plates only)' }
+            ]
+        };
+
+        const QUICK_WEIGHTS = {
+            lb: [95, 135, 185, 225, 275, 315, 405],
+            kg: [40, 60, 80, 100, 120, 140, 180]
+        };
+
+        // State
+        let currentUnit = 'lb';
+
+        // DOM Elements
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => document.querySelectorAll(sel);
+
+        const targetWeightInput = $('#targetWeight');
+        const barWeightSelect = $('#barWeight');
+        const platesLeft = $('#platesLeft');
+        const platesRight = $('#platesRight');
+        const resultsDiv = $('#results');
+        const unitBtns = $$('.unit-btn');
+        const quickWeightsDiv = $('#quickWeights');
+
+        // Calculate plates needed per side
+        function calculatePlates(targetWeight, barWeight, unit) {
+            const plates = PLATES[unit];
+            const weightPerSide = (targetWeight - barWeight) / 2;
+
+            if (weightPerSide < 0) {
+                return {
+                    error: `Target must be at least ${barWeight} ${unit.toUpperCase()} (bar weight)`
+                };
+            }
+
+            const result = [];
+            let remaining = weightPerSide;
+
+            for (const plate of plates) {
+                const count = Math.floor(remaining / plate.weight);
+                if (count > 0) {
+                    result.push({ ...plate, count });
+                    remaining = Math.round((remaining - count * plate.weight) * 100) / 100;
+                }
+            }
+
+            if (remaining > 0.01) {
+                const achievableWeight = targetWeight - remaining * 2;
+                return {
+                    plates: result,
+                    warning: `Closest weight: ${achievableWeight.toFixed(2)} ${unit.toUpperCase()}`,
+                    actualWeight: achievableWeight
+                };
+            }
+
+            return { plates: result, actualWeight: targetWeight };
+        }
+
+        // Render plate elements for visualization
+        function renderPlates(plateData) {
+            if (!plateData.plates) return '';
+
+            let html = '';
+            let delay = 0;
+
+            for (const plate of plateData.plates) {
+                for (let i = 0; i < plate.count; i++) {
+                    html += `<div class="plate ${plate.className}" style="animation-delay: ${delay}ms">${plate.label}</div>`;
+                    delay += 50;
+                }
+            }
+            return html;
+        }
+
+        // Render results list
+        function renderResults(plateData, barWeight, unit) {
+            const unitLabel = unit.toUpperCase();
+
+            if (plateData.error) {
+                return `<div class="message message-error">${plateData.error}</div>`;
+            }
+
+            if (!plateData.plates || plateData.plates.length === 0) {
+                const target = parseFloat(targetWeightInput.value);
+                if (barWeight === target) {
+                    return `
+                        <div class="total-display">
+                            <span class="total-label">Total Weight (bar only)</span>
+                            <span class="total-weight">${barWeight} ${unitLabel}</span>
+                        </div>
+                    `;
+                }
+            }
+
+            let html = '<h3 class="results-header">Plates Per Side</h3><div class="plate-list">';
+
+            if (plateData.plates) {
+                for (const plate of plateData.plates) {
+                    const textColor = plate.color === '#f5f5f5' ? '#000' : '#fff';
+                    html += `
+                        <div class="plate-item">
+                            <div class="plate-color" style="background: ${plate.color}; color: ${textColor}"></div>
+                            <span class="plate-count">${plate.count}x</span>
+                            <span>${plate.weight} ${unitLabel}</span>
+                        </div>
+                    `;
+                }
+            }
+
+            html += '</div>';
+
+            if (plateData.warning) {
+                html += `<div class="message message-warning mt-4">${plateData.warning}</div>`;
+            }
+
+            html += `
+                <div class="total-display">
+                    <span class="total-label">Total Weight</span>
+                    <span class="total-weight">${plateData.actualWeight} ${unitLabel}</span>
+                </div>
+            `;
+
+            return html;
+        }
+
+        // Update quick weight buttons
+        function updateQuickWeights() {
+            const weights = QUICK_WEIGHTS[currentUnit];
+            const unitLabel = currentUnit.toUpperCase();
+            quickWeightsDiv.innerHTML = weights.map(w =>
+                `<button class="quick-weight-btn" data-weight="${w}">${w}</button>`
+            ).join('');
+        }
+
+        // Update bar options
+        function updateBarOptions() {
+            const options = BAR_WEIGHTS[currentUnit];
+            barWeightSelect.innerHTML = options.map(opt =>
+                `<option value="${opt.value}">${opt.label}</option>`
+            ).join('');
+        }
+
+        // Main update function
+        function update() {
+            const targetWeight = parseFloat(targetWeightInput.value) || 0;
+            const barWeight = parseFloat(barWeightSelect.value) || 0;
+
+            const plateData = calculatePlates(targetWeight, barWeight, currentUnit);
+
+            const platesHtml = renderPlates(plateData);
+            platesLeft.innerHTML = platesHtml;
+            platesRight.innerHTML = platesHtml;
+
+            resultsDiv.innerHTML = renderResults(plateData, barWeight, currentUnit);
+
+            // Save state
+            localStorage.setItem('plateCalc', JSON.stringify({
+                targetWeight,
+                barWeight,
+                unit: currentUnit
+            }));
+        }
+
+        // Event Listeners
+        targetWeightInput.addEventListener('input', update);
+        barWeightSelect.addEventListener('change', update);
+
+        unitBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                unitBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-pressed', 'false');
+                });
+                btn.classList.add('active');
+                btn.setAttribute('aria-pressed', 'true');
+
+                const newUnit = btn.dataset.unit;
+
+                // Convert weight
+                const currentWeight = parseFloat(targetWeightInput.value) || 0;
+                if (newUnit === 'kg' && currentUnit === 'lb') {
+                    targetWeightInput.value = Math.round(currentWeight / 2.205);
+                } else if (newUnit === 'lb' && currentUnit === 'kg') {
+                    targetWeightInput.value = Math.round(currentWeight * 2.205);
+                }
+
+                currentUnit = newUnit;
+                updateBarOptions();
+                updateQuickWeights();
+                update();
+            });
+        });
+
+        quickWeightsDiv.addEventListener('click', (e) => {
+            if (e.target.classList.contains('quick-weight-btn')) {
+                targetWeightInput.value = e.target.dataset.weight;
+                update();
+
+                // Visual feedback
+                e.target.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    e.target.style.transform = '';
+                }, 100);
+            }
+        });
+
+        // Load saved state
+        function loadState() {
+            const saved = localStorage.getItem('plateCalc');
+            if (saved) {
+                try {
+                    const state = JSON.parse(saved);
+                    currentUnit = state.unit || 'lb';
+
+                    unitBtns.forEach(btn => {
+                        const isActive = btn.dataset.unit === currentUnit;
+                        btn.classList.toggle('active', isActive);
+                        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                    });
+
+                    updateBarOptions();
+                    updateQuickWeights();
+
+                    targetWeightInput.value = state.targetWeight || 135;
+                    barWeightSelect.value = state.barWeight || (currentUnit === 'lb' ? 45 : 20);
+                } catch (e) {
+                    updateQuickWeights();
+                }
+            } else {
+                updateQuickWeights();
+            }
+        }
+
+        // Initialize
+        loadState();
+        update();
+
+        // Handle keyboard nav for weight input
+        targetWeightInput.addEventListener('keydown', (e) => {
+            const step = e.shiftKey ? 10 : 5;
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                targetWeightInput.value = parseFloat(targetWeightInput.value) + step;
+                update();
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                targetWeightInput.value = Math.max(0, parseFloat(targetWeightInput.value) - step);
+                update();
+            }
+        });
+    </script>
+</body>
+</html>

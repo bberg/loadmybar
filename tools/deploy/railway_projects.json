@@ -1,0 +1,44 @@
+{
+  "NoiseGenerator": {
+    "project_id": "a7fbf6b2-3be0-4d90-8f21-c57b8de3156d",
+    "domain": "focushum.com",
+    "repo": "bberg/noise-generator",
+    "service_id": "d9669e92-9290-4013-b000-d0dc2f29d464",
+    "domain_id": "8ae4362e-1ede-4ca8-85bc-ea144c2ac14e"
+  },
+  "ToneGenerator": {
+    "project_id": "74609c35-c118-4cc0-a7dd-83638f17b713",
+    "domain": "tonesynth.com",
+    "repo": "bberg/tone-generator",
+    "service_id": "175f4ba8-1bc6-48b3-8578-c0ef9fd0d7c5",
+    "domain_id": "185be32e-eabd-49c0-9309-1832c94435a3"
+  },
+  "DroneGenerator": {
+    "project_id": "dd888782-1940-42fa-9a06-6590f99efca3",
+    "domain": "omtones.com",
+    "repo": "bberg/drone-generator",
+    "service_id": "8fcb2f6c-ccd5-46c7-a062-ebe39f6c11a8",
+    "domain_id": "d0193d89-084b-48c4-a415-2a26eb3390ad"
+  },
+  "FrequencyGenerator": {
+    "project_id": "9ce3160a-791c-4958-80cf-cfc2a7bd1508",
+    "domain": "testtones.com",
+    "repo": "bberg/frequency-generator",
+    "service_id": "1901dac8-90af-42f2-94d5-25fcd25db6ac",
+    "domain_id": "200cdab1-9813-486d-b0d6-0a94dc5fa9b8"
+  },
+  "Metronome": {
+    "project_id": "54ecaaee-3a4b-4c44-af47-6d5b54e1474f",
+    "domain": "metronomely.com",
+    "repo": "bberg/metronome",
+    "service_id": "61b0c126-d52a-45ca-ad96-cc6b255a91b0",
+    "domain_id": "5c8674e5-9c1b-4474-83c8-622edaa9ef2c"
+  },
+  "BinauralBeats": {
+    "project_id": "45339e2a-32c7-46cc-a3c1-3c96c5ea5f43",
+    "domain": "binauralhq.com",
+    "repo": "bberg/binaural-beats",
+    "service_id": "1c6e2401-6599-41d1-9c32-f45a707dc46d",
+    "domain_id": "8c27cf6b-590b-46b8-844a-cd831be21c09"
+  }
+}

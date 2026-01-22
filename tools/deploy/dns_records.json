@@ -1,0 +1,50 @@
+{
+  "focushum.com": [
+    {
+      "type": "DNS_RECORD_TYPE_CNAME",
+      "name": "",
+      "target": "t9soljrg.up.railway.app",
+      "status": "DNS_RECORD_STATUS_ACTIVE"
+    }
+  ],
+  "tonesynth.com": [
+    {
+      "type": "DNS_RECORD_TYPE_CNAME",
+      "name": "",
+      "target": "nxtdqtek.up.railway.app",
+      "status": "DNS_RECORD_STATUS_ACTIVE"
+    }
+  ],
+  "omtones.com": [
+    {
+      "type": "DNS_RECORD_TYPE_CNAME",
+      "name": "",
+      "target": "tu3itirn.up.railway.app",
+      "status": "DNS_RECORD_STATUS_ACTIVE"
+    }
+  ],
+  "testtones.com": [
+    {
+      "type": "DNS_RECORD_TYPE_CNAME",
+      "name": "",
+      "target": "1xdhpuk8.up.railway.app",
+      "status": "DNS_RECORD_STATUS_ACTIVE"
+    }
+  ],
+  "metronomely.com": [
+    {
+      "type": "DNS_RECORD_TYPE_CNAME",
+      "name": "",
+      "target": "w1c05y33.up.railway.app",
+      "status": "DNS_RECORD_STATUS_ACTIVE"
+    }
+  ],
+  "binauralhq.com": [
+    {
+      "type": "DNS_RECORD_TYPE_CNAME",
+      "name": "",
+      "target": "ms4oicdh.up.railway.app",
+      "status": "DNS_RECORD_STATUS_ACTIVE"
+    }
+  ]
+}
