@@ -142,10 +142,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            min-width: 64px;
+            width: 72px;
             height: 48px;
-            padding: 0 var(--space-4);
-            font-size: var(--text-lg);
+            font-size: var(--text-base);
             font-weight: var(--font-bold);
             background: var(--bg-tertiary);
             border: 1px solid var(--border-default);
@@ -166,12 +165,6 @@
             transform: scale(0.95);
             background: var(--accent-blue);
             color: var(--text-on-emphasis);
-        }
-
-        .stepper-btn.large {
-            min-width: 80px;
-            height: 56px;
-            font-size: var(--text-xl);
         }
 
         /* Unit toggle - horizontal and compact */
@@ -423,8 +416,8 @@
             <div class="stepper-controls">
                 <button class="stepper-btn" data-step="-45" aria-label="Subtract 45">−45</button>
                 <button class="stepper-btn" data-step="-5" aria-label="Subtract 5">−5</button>
-                <button class="stepper-btn large" data-step="5" aria-label="Add 5">+5</button>
-                <button class="stepper-btn large" data-step="45" aria-label="Add 45">+45</button>
+                <button class="stepper-btn" data-step="5" aria-label="Add 5">+5</button>
+                <button class="stepper-btn" data-step="45" aria-label="Add 45">+45</button>
             </div>
 
             <p class="tap-hint">Tap the weight to type directly</p>
