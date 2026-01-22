@@ -19,7 +19,7 @@ import argparse
 import requests
 from config import SITES, GITHUB_ORG
 
-RAILWAY_API_URL = "https://backboard.railway.app/graphql/v2"
+RAILWAY_API_URL = "https://backboard.railway.com/graphql/v2"
 
 
 class RailwayClient:
