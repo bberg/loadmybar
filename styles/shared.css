@@ -1101,6 +1101,63 @@ a:hover {
     animation: slideUp var(--transition-slow) ease-out;
 }
 
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
+}
+
+@keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 var(--accent-green-glow); }
+    50% { box-shadow: 0 0 20px 4px var(--accent-green-glow); }
+}
+
+@keyframes bounce-in {
+    0% { transform: scale(0.8); opacity: 0; }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-shake {
+    animation: shake 0.4s ease-in-out;
+}
+
+.animate-glow {
+    animation: glow-pulse 1.5s ease-in-out infinite;
+}
+
+.animate-bounce-in {
+    animation: bounce-in 0.3s ease-out;
+}
+
+/* High contrast mode for gym use */
+.high-contrast {
+    --bg-primary: #000000;
+    --bg-secondary: #0a0a0a;
+    --bg-tertiary: #141414;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --border-default: #444444;
+}
+
+.high-contrast .weight-display {
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+}
+
+.high-contrast .plate {
+    border: 2px solid rgba(255, 255, 255, 0.25);
+}
+
+.high-contrast .stepper-btn,
+.high-contrast .quick-weight-btn {
+    border-width: 2px;
+    font-weight: var(--font-bold);
+}
+
+.high-contrast .card {
+    border-width: 2px;
+}
+
 /* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -1108,4 +1165,16 @@ a:hover {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+/* Selection styling */
+::selection {
+    background: var(--accent-blue);
+    color: var(--text-on-emphasis);
 }
