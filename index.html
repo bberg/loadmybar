@@ -778,6 +778,199 @@
             font-size: var(--text-lg);
             border-width: 2px;
         }
+
+        /* Milestone badge */
+        .milestone-badge {
+            display: none; /* Hidden on mobile by default */
+            padding: 2px 6px;
+            font-size: 8px;
+            font-weight: var(--font-bold);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            border-radius: var(--radius-full);
+            margin-left: var(--space-1);
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        @media (min-width: 768px) {
+            .milestone-badge {
+                display: inline-block;
+            }
+        }
+
+        .milestone-badge.beginner { background: var(--accent-green-glow); color: var(--accent-green); }
+        .milestone-badge.intermediate { background: rgba(96, 165, 250, 0.15); color: var(--accent-blue); }
+        .milestone-badge.advanced { background: rgba(251, 191, 36, 0.2); color: var(--accent-yellow); }
+        .milestone-badge.elite { background: rgba(248, 113, 113, 0.2); color: var(--accent-red); }
+
+        /* Quick weight buttons with badges need more padding */
+        .quick-weight-btn:has(.milestone-badge) {
+            padding: var(--space-2) var(--space-3);
+        }
+
+        /* Pro tips section */
+        .tips-banner {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-3);
+            background: var(--bg-glass-light);
+            border: 1px solid var(--border-muted);
+            border-radius: var(--radius-lg);
+            margin-top: var(--space-3);
+            font-size: var(--text-xs);
+            color: var(--text-secondary);
+        }
+
+        .tips-banner svg {
+            width: 16px;
+            height: 16px;
+            color: var(--accent-blue);
+            flex-shrink: 0;
+        }
+
+        .tips-banner strong {
+            color: var(--accent-blue);
+        }
+
+        @media (min-width: 768px) {
+            .tips-banner {
+                font-size: var(--text-sm);
+            }
+        }
+
+        /* Keyboard shortcuts overlay */
+        .shortcuts-hint {
+            display: none;
+            margin-top: var(--space-4);
+            padding: var(--space-3);
+            background: var(--bg-glass-light);
+            border-radius: var(--radius-lg);
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+        }
+
+        @media (min-width: 768px) {
+            .shortcuts-hint {
+                display: block;
+            }
+        }
+
+        .shortcuts-hint kbd {
+            display: inline-block;
+            padding: 2px 6px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-sm);
+            margin: 0 2px;
+        }
+
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+        }
+
+        .shortcut-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        /* Quick Reference Section */
+        .quick-ref-section {
+            margin-top: var(--space-4);
+            border: 1px solid var(--border-muted);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .quick-ref-toggle {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3);
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            color: var(--text-secondary);
+            cursor: pointer;
+            background: var(--bg-glass-light);
+            list-style: none;
+            user-select: none;
+        }
+
+        .quick-ref-toggle::-webkit-details-marker {
+            display: none;
+        }
+
+        .quick-ref-toggle:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .quick-ref-toggle svg {
+            color: var(--accent-blue);
+        }
+
+        .toggle-icon {
+            margin-left: auto;
+            font-weight: var(--font-bold);
+            transition: transform var(--transition-fast);
+        }
+
+        .quick-ref-section[open] .toggle-icon {
+            transform: rotate(45deg);
+        }
+
+        .quick-ref-content {
+            padding: var(--space-3);
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-muted);
+        }
+
+        .ref-section {
+            margin-bottom: var(--space-3);
+        }
+
+        .ref-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .ref-section h4 {
+            font-size: 10px;
+            font-weight: var(--font-bold);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: var(--space-2);
+        }
+
+        .ref-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-1);
+        }
+
+        @media (min-width: 768px) {
+            .ref-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .ref-item {
+            font-size: var(--text-xs);
+            color: var(--text-secondary);
+            padding: var(--space-1) 0;
+        }
+
+        .ref-weight {
+            font-weight: var(--font-bold);
+            color: var(--accent-green);
+        }
     </style>
 </head>
 <body class="has-bottom-nav">
@@ -880,6 +1073,63 @@
                 <button class="percent-btn" data-percent="90">90%</button>
                 <button class="percent-btn" data-percent="95">95%</button>
             </div>
+
+            <!-- Contextual Tips -->
+            <div class="tips-banner" id="tipsBanner">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 16v-4m0-4h.01"/>
+                </svg>
+                <span id="tipText"><strong>Tip:</strong> Swipe up/down on the weight to adjust quickly</span>
+            </div>
+
+            <!-- Keyboard shortcuts (desktop) -->
+            <div class="shortcuts-hint">
+                <strong>Keyboard shortcuts:</strong>
+                <div class="shortcuts-grid">
+                    <div class="shortcut-item"><kbd>↑</kbd> / <kbd>↓</kbd> Adjust weight</div>
+                    <div class="shortcut-item"><kbd>Shift</kbd> + arrows = big jumps</div>
+                    <div class="shortcut-item"><kbd>R</kbd> Start/stop rest timer</div>
+                    <div class="shortcut-item"><kbd>U</kbd> Toggle lb/kg units</div>
+                    <div class="shortcut-item"><kbd>C</kbd> High contrast mode</div>
+                    <div class="shortcut-item">Tap weight to type directly</div>
+                </div>
+            </div>
+
+            <!-- Quick Reference -->
+            <details class="quick-ref-section">
+                <summary class="quick-ref-toggle">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <path d="M12 17h.01"/>
+                    </svg>
+                    Quick Reference
+                    <span class="toggle-icon">+</span>
+                </summary>
+                <div class="quick-ref-content">
+                    <div class="ref-section">
+                        <h4>Plate Count Cheat Sheet (lb)</h4>
+                        <div class="ref-grid">
+                            <div class="ref-item"><span class="ref-weight">135</span> = 1 plate/side</div>
+                            <div class="ref-item"><span class="ref-weight">185</span> = 1 + 25 + 5</div>
+                            <div class="ref-item"><span class="ref-weight">225</span> = 2 plates/side</div>
+                            <div class="ref-item"><span class="ref-weight">275</span> = 2 + 25</div>
+                            <div class="ref-item"><span class="ref-weight">315</span> = 3 plates/side</div>
+                            <div class="ref-item"><span class="ref-weight">405</span> = 4 plates/side</div>
+                        </div>
+                    </div>
+                    <div class="ref-section">
+                        <h4>Common Bar Weights</h4>
+                        <div class="ref-grid">
+                            <div class="ref-item">Olympic: <span class="ref-weight">45 lb / 20 kg</span></div>
+                            <div class="ref-item">Women's: <span class="ref-weight">35 lb / 15 kg</span></div>
+                            <div class="ref-item">EZ Curl: <span class="ref-weight">15-25 lb</span></div>
+                            <div class="ref-item">Trap Bar: <span class="ref-weight">45-65 lb</span></div>
+                        </div>
+                    </div>
+                </div>
+            </details>
         </main>
 
         <!-- Rest Timer FAB -->
@@ -1624,6 +1874,114 @@
                 document.body.classList.toggle('high-contrast');
             }
         });
+
+        // ===================================================================
+        // Contextual Tips System
+        // ===================================================================
+        const tipsBanner = $('#tipsBanner');
+        const tipText = $('#tipText');
+
+        const tips = [
+            { text: '<strong>Tip:</strong> Swipe up/down on the weight to adjust quickly', mobile: true },
+            { text: '<strong>Tip:</strong> Tap the weight number to type directly', mobile: true },
+            { text: '<strong>Tip:</strong> Long-press the rest timer to change duration', mobile: true },
+            { text: '<strong>Pro tip:</strong> 135 lb = 1 plate per side, 225 lb = 2 plates', mobile: true },
+            { text: '<strong>Pro tip:</strong> Enter your 1RM below to calculate training percentages', mobile: true },
+            { text: '<strong>Did you know?</strong> Press <kbd>R</kbd> to start the rest timer', mobile: false },
+            { text: '<strong>Did you know?</strong> Press <kbd>C</kbd> for high-contrast gym mode', mobile: false },
+            { text: '<strong>Did you know?</strong> Use <kbd>Shift</kbd>+arrows for big weight jumps', mobile: false },
+            { text: '<strong>Quick math:</strong> 315 lb = 3 plates, 405 lb = 4 plates per side', mobile: true },
+            { text: '<strong>Offline ready:</strong> This app works without internet at the gym', mobile: true },
+        ];
+
+        let currentTipIndex = 0;
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+        function showNextTip() {
+            // Filter tips based on device
+            const availableTips = tips.filter(t => isMobile ? t.mobile : true);
+
+            currentTipIndex = (currentTipIndex + 1) % availableTips.length;
+            tipText.innerHTML = availableTips[currentTipIndex].text;
+
+            // Subtle animation
+            tipsBanner.style.opacity = '0.5';
+            setTimeout(() => tipsBanner.style.opacity = '1', 150);
+        }
+
+        // Rotate tips every 12 seconds
+        setInterval(showNextTip, 12000);
+
+        // Click to see next tip
+        tipsBanner.addEventListener('click', () => {
+            haptic.light();
+            showNextTip();
+        });
+        tipsBanner.style.cursor = 'pointer';
+
+        // ===================================================================
+        // Enhanced Quick Weights with Plate Context
+        // ===================================================================
+        const PLATE_MILESTONES = {
+            lb: {
+                135: { plates: 1, label: '1 plate' },
+                185: { plates: 1.5, label: '1.5 plates' },
+                225: { plates: 2, label: '2 plates' },
+                275: { plates: 2.5, label: '2.5 plates' },
+                315: { plates: 3, label: '3 plates' },
+                405: { plates: 4, label: '4 plates' },
+                495: { plates: 5, label: '5 plates' },
+            },
+            kg: {
+                60: { plates: 1, label: '1 plate' },
+                100: { plates: 2, label: '2 plates' },
+                140: { plates: 3, label: '3 plates' },
+                180: { plates: 4, label: '4 plates' },
+                220: { plates: 5, label: '5 plates' },
+            }
+        };
+
+        // Override the updateQuickWeights function to include context
+        function updateQuickWeightsWithContext() {
+            const weights = QUICK_WEIGHTS[currentUnit];
+            const milestones = PLATE_MILESTONES[currentUnit];
+            const currentWeight = parseFloat(targetWeightInput.value) || 0;
+
+            quickWeightsDiv.innerHTML = weights.map(w => {
+                const milestone = milestones[w];
+                const isActive = w === currentWeight ? 'active' : '';
+                const badge = milestone ? `<span class="milestone-badge intermediate">${milestone.label}</span>` : '';
+                return `<button class="quick-weight-btn ${isActive}" data-weight="${w}">${w}${badge}</button>`;
+            }).join('');
+        }
+
+        // Replace the original updateQuickWeights call
+        const originalUpdate = update;
+        update = function(animate = false) {
+            const targetWeight = parseFloat(targetWeightInput.value) || 0;
+            const barWeight = parseFloat(barWeightSelect.value) || 0;
+
+            updateWeightDisplay(animate);
+            updateQuickWeightsWithContext(); // Use enhanced version
+
+            const plateData = calculatePlates(targetWeight, barWeight, currentUnit);
+
+            const platesHtml = renderPlates(plateData);
+            platesLeft.innerHTML = platesHtml;
+            platesRight.innerHTML = platesHtml;
+
+            resultsDiv.innerHTML = renderResults(plateData, barWeight, currentUnit);
+
+            // Save state
+            localStorage.setItem('plateCalc', JSON.stringify({
+                targetWeight,
+                barWeight,
+                unit: currentUnit
+            }));
+        };
+
+        // Re-initialize with enhanced quick weights
+        updateQuickWeightsWithContext();
     </script>
 </body>
 </html>

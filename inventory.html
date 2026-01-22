@@ -965,6 +965,11 @@
         // Initialize
         loadState();
         updateUI();
+
+        // Register service worker for offline support
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
     </script>
 </body>
 </html>

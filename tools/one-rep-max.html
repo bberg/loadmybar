@@ -114,6 +114,53 @@
             color: var(--text-secondary);
             margin-left: var(--space-2);
         }
+        .result-actions {
+            margin-top: var(--space-4);
+            display: flex;
+            gap: var(--space-2);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .result-action-btn {
+            padding: var(--space-2) var(--space-4);
+            font-size: var(--text-sm);
+            font-weight: var(--font-semibold);
+            background: var(--accent-blue);
+            color: var(--text-on-emphasis);
+            border: none;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        .result-action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        .result-action-btn.secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-default);
+        }
+        .result-action-btn.secondary:hover {
+            border-color: var(--accent-blue);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+        .training-max {
+            margin-top: var(--space-3);
+            padding: var(--space-2) var(--space-3);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            display: inline-block;
+        }
+        .training-max strong {
+            color: var(--accent-yellow);
+        }
         .percentage-table {
             margin-top: var(--space-5);
         }
@@ -132,6 +179,17 @@
             background: var(--bg-tertiary);
             border-radius: var(--radius-md);
             text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: 1px solid transparent;
+        }
+        .pct-item:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+        .pct-item:active {
+            transform: scale(0.97);
         }
         .pct-label {
             font-size: var(--text-xs);
@@ -144,6 +202,16 @@
         .pct-reps {
             font-size: var(--text-xs);
             color: var(--text-secondary);
+        }
+        .pct-hint {
+            font-size: 9px;
+            color: var(--accent-blue);
+            margin-top: 2px;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+        .pct-item:hover .pct-hint {
+            opacity: 1;
         }
         .formulas-section {
             margin-top: var(--space-6);
@@ -243,6 +311,25 @@
                 <div class="result-label">Estimated 1 Rep Max</div>
                 <span class="result-value" id="oneRepMax">208</span>
                 <span class="result-unit" id="resultUnit">LB</span>
+                <div class="training-max">Training Max (90%): <strong id="trainingMax">187</strong></div>
+                <div class="result-actions">
+                    <a href="#" id="loadWeightBtn" class="result-action-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="10" width="20" height="4" rx="1"/>
+                            <circle cx="5" cy="12" r="3"/>
+                            <circle cx="19" cy="12" r="3"/>
+                        </svg>
+                        Load on Bar
+                    </a>
+                    <button id="save1RMBtn" class="result-action-btn secondary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                        Save as Max
+                    </button>
+                </div>
             </div>
 
             <div class="percentage-table">
@@ -314,12 +401,16 @@
         const weightInput = document.getElementById('weight');
         const repsInput = document.getElementById('reps');
         const oneRepMaxDisplay = document.getElementById('oneRepMax');
+        const trainingMaxDisplay = document.getElementById('trainingMax');
         const resultUnit = document.getElementById('resultUnit');
         const percentagesDiv = document.getElementById('percentages');
         const formulasDiv = document.getElementById('formulas');
         const unitBtns = document.querySelectorAll('.unit-btn');
+        const loadWeightBtn = document.getElementById('loadWeightBtn');
+        const save1RMBtn = document.getElementById('save1RMBtn');
 
         let currentUnit = 'lb';
+        let currentOneRM = 0;
 
         // 1RM Formulas
         const formulas = {
@@ -347,31 +438,63 @@
             return Math.round(weight / increment) * increment;
         }
 
+        // Navigate to plate calculator with a specific weight
+        function loadWeight(weight) {
+            // Save to localStorage so the plate calculator can pick it up
+            localStorage.setItem('plateCalc', JSON.stringify({
+                targetWeight: weight,
+                barWeight: currentUnit === 'lb' ? 45 : 20,
+                unit: currentUnit
+            }));
+            window.location.href = '../index.html';
+        }
+
         function calculate() {
             const weight = parseFloat(weightInput.value) || 0;
             const reps = parseInt(repsInput.value) || 1;
 
             if (weight <= 0 || reps < 1) {
                 oneRepMaxDisplay.textContent = '—';
+                trainingMaxDisplay.textContent = '—';
                 return;
             }
 
             // Primary estimate (Epley)
-            const oneRM = roundToPlate(formulas.epley(weight, reps), currentUnit);
-            oneRepMaxDisplay.textContent = oneRM;
+            currentOneRM = roundToPlate(formulas.epley(weight, reps), currentUnit);
+            const trainingMax = roundToPlate(currentOneRM * 0.9, currentUnit);
+
+            oneRepMaxDisplay.textContent = currentOneRM;
+            trainingMaxDisplay.textContent = trainingMax + ' ' + currentUnit.toUpperCase();
             resultUnit.textContent = currentUnit.toUpperCase();
 
-            // Percentage table
+            // Update load button href
+            loadWeightBtn.href = `../index.html?weight=${currentOneRM}&unit=${currentUnit}`;
+
+            // Percentage table with clickable items
             percentagesDiv.innerHTML = percentageData.map(({ pct, reps }) => {
-                const w = roundToPlate(oneRM * (pct / 100), currentUnit);
+                const w = roundToPlate(currentOneRM * (pct / 100), currentUnit);
                 return `
-                    <div class="pct-item">
+                    <div class="pct-item" data-weight="${w}" role="button" tabindex="0">
                         <div class="pct-label">${pct}%</div>
                         <div class="pct-weight">${w}</div>
                         <div class="pct-reps">${reps} reps</div>
+                        <div class="pct-hint">Tap to load</div>
                     </div>
                 `;
             }).join('');
+
+            // Add click handlers to percentage items
+            percentagesDiv.querySelectorAll('.pct-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    loadWeight(parseInt(item.dataset.weight));
+                });
+                item.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        loadWeight(parseInt(item.dataset.weight));
+                    }
+                });
+            });
 
             // Formula comparison
             formulasDiv.innerHTML = Object.entries(formulas).map(([name, fn]) => {
@@ -387,6 +510,36 @@
 
         weightInput.addEventListener('input', calculate);
         repsInput.addEventListener('input', calculate);
+
+        // Load on Bar button
+        loadWeightBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentOneRM > 0) {
+                loadWeight(currentOneRM);
+            }
+        });
+
+        // Save as Max button - saves to localStorage for plate calculator percentage feature
+        save1RMBtn.addEventListener('click', () => {
+            if (currentOneRM > 0) {
+                localStorage.setItem('maxWeight', currentOneRM);
+                save1RMBtn.textContent = 'Saved!';
+                save1RMBtn.style.background = 'var(--accent-green)';
+                save1RMBtn.style.color = 'var(--text-on-emphasis)';
+                setTimeout(() => {
+                    save1RMBtn.innerHTML = `
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                        Save as Max
+                    `;
+                    save1RMBtn.style.background = '';
+                    save1RMBtn.style.color = '';
+                }, 1500);
+            }
+        });
 
         unitBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -411,6 +564,11 @@
 
         // Initialize
         calculate();
+
+        // Register service worker for offline support
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
     </script>
 </body>
 </html>
